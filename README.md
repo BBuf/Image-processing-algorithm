@@ -5,6 +5,7 @@
 - HDR.cpp 对《Adaptive Local Tone Mapping Based on Retinex for High Dynamic Range Images》C++朴素实现，无优化，详情请查看https://blog.csdn.net/just_sort/article/details/84030723
 - Adaptive Logarithmic Mapping For Displaying High Contrast Scenes.cpp 《Adaptive Logarithmic Mapping For Displaying High Contrast Scenes》c++朴素实现 ,详情请看：https://blog.csdn.net/just_sort/article/details/84066390
 
+- Single Image Haze Removal Using Dark Channel Prior.cpp 《Single Image Haze Removal Using Dark Channel Prior》论文阅读及复现，详情请看：https://blog.csdn.net/just_sort/article/details/84110518
 
 
 
