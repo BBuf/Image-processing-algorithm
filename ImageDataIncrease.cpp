@@ -78,14 +78,20 @@ Mat AddSaltNoise(const Mat &img, double SNR) {
 	int NP = SP*(1 - SNR); //获得需要添加椒盐噪声的像素个数
 	dst = img.clone();
 	for (int i = 0; i < NP; i++) {
-		int x = (int)(rand()*1.0 / RAND_MAX * (double)img.rows);
-		int y = (int)(rand()*1.0 / RAND_MAX * (double)img.cols);
-		int r = rand() % 2;
+		int x = (int)(abs(rand()*1.0) / RAND_MAX * (double)img.rows);
+		int y = (int)(abs(rand()*1.0) / RAND_MAX * (double)img.cols);
+		if (x >= img.rows) x = img.rows - 1;
+		if (y >= img.cols) y = img.cols - 1;
+		int r = abs(rand()) % 2;
 		if (r) {
-			dst.at<uchar>(x, y) = 0;
+			dst.at<Vec3b>(x, y)[0] = 0;
+			dst.at<Vec3b>(x, y)[1] = 0;
+			dst.at<Vec3b>(x, y)[2] = 0;
 		}
 		else {
-			dst.at<uchar>(x, y) = 255;
+			dst.at<Vec3b>(x, y)[0] = 255;
+			dst.at<Vec3b>(x, y)[1] = 255;
+			dst.at<Vec3b>(x, y)[2] = 255;
 		}
 	}
 	return dst;
