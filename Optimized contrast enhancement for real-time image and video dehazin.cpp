@@ -1,252 +1,242 @@
-void dehazing::AirlightEstimation(IplImage* imInput)
+#include "opencv2/opencv.hpp"
+#include "iostream"
+#include "algorithm"
+#include "vector"
+using namespace std;
+using namespace cv;
+
+//计算大气光值
+vector <int> m_anAirlight;
+void AirlightEstimation(cv::Mat src)
 {
     int nMinDistance = 65536;
     int nDistance;
-
-    int nX, nY;
-
     int nMaxIndex;
     double dpScore[3];
-    double dpMean[3];
-    double dpStds[3];
-
-    float afMean[4] = {0};
     float afScore[4] = {0};
     float nMaxScore = 0;
+    int cols = src.cols;
+    int rows = src.rows;
+    //4 sub-block
+    Mat R = Mat(rows / 2, cols / 2, CV_8UC1);
+    Mat G = Mat(rows / 2, cols / 2, CV_8UC1);
+    Mat B = Mat(rows / 2, cols / 2, CV_8UC1);
+    Rect temp1(0, 0, cols / 2, rows / 2);
+    Mat UpperLeft = src(temp1);
+    Rect temp2(cols / 2, 0, cols / 2, rows / 2);
+    Mat UpperRight = src(temp2);
+    Rect temp3(0, rows / 2, cols / 2, rows / 2);
+    Mat LowerLeft = src(temp3);
+    Rect temp4(cols / 2, rows / 2, cols / 2, rows / 2);
+    Mat LowerRight = src(temp4);
+    if(rows * cols > 200){
+        vector <Mat> channels;
+        //upper left sub-block
+        split(UpperLeft, channels);
 
-    int nWid = imInput->width;
-    int nHei = imInput->height;
-
-    int nStep = imInput->widthStep;
-
-    // 4 sub-block
-    IplImage *iplUpperLeft = cvCreateImage(cvSize(nWid/2, nHei/2),IPL_DEPTH_8U, 3);
-    IplImage *iplUpperRight = cvCreateImage(cvSize(nWid/2, nHei/2),IPL_DEPTH_8U, 3);
-    IplImage *iplLowerLeft = cvCreateImage(cvSize(nWid/2, nHei/2),IPL_DEPTH_8U, 3);
-    IplImage *iplLowerRight = cvCreateImage(cvSize(nWid/2, nHei/2),IPL_DEPTH_8U, 3);
-
-    IplImage *iplR = cvCreateImage(cvSize(nWid/2, nHei/2),IPL_DEPTH_8U, 1);
-    IplImage *iplG = cvCreateImage(cvSize(nWid/2, nHei/2),IPL_DEPTH_8U, 1);
-    IplImage *iplB = cvCreateImage(cvSize(nWid/2, nHei/2),IPL_DEPTH_8U, 1);
-
-    // divide 
-    cvSetImageROI(imInput, cvRect(0, 0, nWid/2, nHei/2));
-    cvCopyImage(imInput, iplUpperLeft);
-    cvSetImageROI(imInput, cvRect(nWid/2+nWid%2, 0, nWid, nHei/2));
-    cvCopyImage(imInput, iplUpperRight);
-    cvSetImageROI(imInput, cvRect(0, nHei/2+nHei%2, nWid/2, nHei));
-    cvCopyImage(imInput, iplLowerLeft);
-    cvSetImageROI(imInput, cvRect(nWid/2+nWid%2, nHei/2+nHei%2, nWid, nHei));
-    cvCopyImage(imInput, iplLowerRight);
-
-    // compare to threshold(200) --> bigger than threshold, divide the block
-    if(nHei*nWid > 200)
-    {
-        // compute the mean and std-dev in the sub-block
-        // upper left sub-blwww.shanxiwang.netock
-        cvCvtPixToPlane(iplUpperLeft, iplR, iplG, iplB, 0);
-
-        cvMean_StdDev(iplR, dpMean, dpStds);
-        cvMean_StdDev(iplG, dpMean+1, dpStds+1);
-        cvMean_StdDev(iplB, dpMean+2, dpStds+2);
-        // dpScore: mean - std-dev
-        dpScore[0] = dpMean[0]-dpStds[0];
-        dpScore[1] = dpMean[1]-dpStds[1];
-        dpScore[2] = dpMean[2]-dpStds[2];
-
-        afScore[0] = (float)(dpScore[0]+dpScore[1]+dpScore[2]);
-
+        B = channels[0];
+        G = channels[1];
+        R = channels[2];
+        Mat tmp_m, tmp_std;
+        meanStdDev(R, tmp_m, tmp_std);
+        dpScore[0] = tmp_m.at<double>(0,0) - tmp_std.at<double>(0,0);
+        meanStdDev(G, tmp_m, tmp_std);
+        dpScore[1] = tmp_m.at<double>(0,0) - tmp_std.at<double>(0,0);
+        meanStdDev(B, tmp_m, tmp_std);
+        dpScore[2] = tmp_m.at<double>(0,0) - tmp_std.at<double>(0,0);
+        afScore[0] = (float)(dpScore[0] + dpScore[1] + dpScore[2]);
         nMaxScore = afScore[0];
         nMaxIndex = 0;
-
-        // upper right sub-block
-        cvCvtPixToPlane(iplUpperRight, iplR, iplG, iplB, 0);
-
-        cvMean_StdDev(iplR, dpMean, dpStds);
-        cvMean_StdDev(iplG, dpMean+1, dpStds+1);
-        cvMean_StdDev(iplB, dpMean+2, dpStds+2);
-
-        dpScore[0] = dpMean[0]-dpStds[0];
-        dpScore[1] = dpMean[1]-dpStds[1];
-        dpScore[2] = dpMean[2]-dpStds[2];
-
-        afScore[1] = (float)(dpScore[0]+dpScore[1]+dpScore[2]);
-
-        if(afScore[1] > nMaxScore)
-        {
+        //upper right sub-block
+        split(UpperRight, channels);
+        B = channels[0];
+        G = channels[1];
+        R = channels[2];
+        meanStdDev(R, tmp_m, tmp_std);
+        dpScore[0] = tmp_m.at<double>(0,0) - tmp_std.at<double>(0,0);
+        meanStdDev(G, tmp_m, tmp_std);
+        dpScore[1] = tmp_m.at<double>(0,0) - tmp_std.at<double>(0,0);
+        meanStdDev(B, tmp_m, tmp_std);
+        dpScore[2] = tmp_m.at<double>(0,0) - tmp_std.at<double>(0,0);
+        afScore[1] = (float)(dpScore[0] + dpScore[1] + dpScore[2]);
+        if(afScore[1] > nMaxScore){
             nMaxScore = afScore[1];
             nMaxIndex = 1;
         }
-
-        // lower left sub-block
-        cvCvtPixToPlane(iplLowerLeft, iplR, iplG, iplB, 0);
-
-        cvMean_StdDev(iplR, dpMean, dpStds);
-        cvMean_StdDev(iplG, dpMean+1, dpStds+1);
-        cvMean_StdDev(iplB, dpMean+2, dpStds+2);
-
-        dpScore[0] = dpMean[0]-dpStds[0];
-        dpScore[1] = dpMean[1]-dpStds[1];
-        dpScore[2] = dpMean[2]-dpStds[2];
-
-        afScore[2] = (float)(dpScore[0]+dpScore[1]+dpScore[2]);
-
-        if(afScore[2] > nMaxScore)
-        {
+        //lower left sub-block
+        split(LowerLeft, channels);
+        B = channels[0];
+        G = channels[1];
+        R = channels[2];
+        meanStdDev(R, tmp_m, tmp_std);
+        dpScore[0] = tmp_m.at<double>(0,0) - tmp_std.at<double>(0,0);
+        meanStdDev(G, tmp_m, tmp_std);
+        dpScore[1] = tmp_m.at<double>(0,0) - tmp_std.at<double>(0,0);
+        meanStdDev(B, tmp_m, tmp_std);
+        dpScore[2] = tmp_m.at<double>(0,0) - tmp_std.at<double>(0,0);
+        afScore[2] = (float)(dpScore[0] + dpScore[1] + dpScore[2]);
+        if(afScore[2] > nMaxScore){
             nMaxScore = afScore[2];
             nMaxIndex = 2;
         }
-
-        // lower right sub-block
-        cvCvtPixToPlane(iplLowerRight, iplR, iplG, iplB, 0);
-
-        cvMean_StdDev(iplR, dpMean, dpStds);
-        cvMean_StdDev(iplG, dpMean+1, dpStds+1);
-        cvMean_StdDev(iplB, dpMean+2, dpStds+2);
-
-        dpScore[0] = dpMean[0]-dpStds[0];
-        dpScore[1] = dpMean[1]-dpStds[1];
-        dpScore[2] = dpMean[2]-dpStds[2];
-
-        afScore[3] = (float)(dpScore[0]+dpScore[1]+dpScore[2]);
-
-        if(afScore[3] > nMaxScore)
-        {
+        //lower right sub-block
+        split(LowerRight, channels);
+        B = channels[0];
+        G = channels[1];
+        R = channels[2];
+        meanStdDev(R, tmp_m, tmp_std);
+        dpScore[0] = tmp_m.at<double>(0,0) - tmp_std.at<double>(0,0);
+        meanStdDev(G, tmp_m, tmp_std);
+        dpScore[1] = tmp_m.at<double>(0,0) - tmp_std.at<double>(0,0);
+        meanStdDev(B, tmp_m, tmp_std);
+        dpScore[2] = tmp_m.at<double>(0,0) - tmp_std.at<double>(0,0);
+        afScore[3] = (float)(dpScore[0] + dpScore[1] + dpScore[2]);
+        if(afScore[3] > nMaxScore){
             nMaxScore = afScore[3];
             nMaxIndex = 3;
         }
+        //select the sub-block, which has maximum score
 
-        // select the sub-block, which has maximum score
-        switch (nMaxIndex)
-        {
-        case 0:
-            AirlightEstimation(iplUpperLeft); break;
-        case 1:
-            AirlightEstimation(iplUpperRight); break;
-        case 2:
-            AirlightEstimation(iplLowerLeft); break;
-        case 3:
-            AirlightEstimation(iplLowerRight); break;
+        switch (nMaxIndex){
+            case 0:
+                AirlightEstimation(UpperLeft); break;
+            case 1:
+                AirlightEstimation(UpperRight); break;
+            case 2:
+                AirlightEstimation(LowerLeft); break;
+            case 3:
+                AirlightEstimation(LowerRight); break;
         }
-    }
-    else
-    {
-        // select the atmospheric light value in the sub-block
-        for(nY=0; nY<nHei; nY++)
-        {
-            for(nX=0; nX<nWid; nX++)
-            {
-                // 255-r, 255-g, 255-b
-                nDistance = int(sqrt(float(255-(uchar)imInput->imageData[nY*nStep+nX*3])*float(255-(uchar)imInput->imageData[nY*nStep+nX*3])
-                    +float(255-(uchar)imInput->imageData[nY*nStep+nX*3+1])*float(255-(uchar)imInput->imageData[nY*nStep+nX*3+1])
-                    +float(255-(uchar)imInput->imageData[nY*nStep+nX*3+2])*float(255-(uchar)imInput->imageData[nY*nStep+nX*3+2])));
-                if(nMinDistance > nDistance)
-                {
+    }else{
+        //在子快中寻找最亮的点作为A
+        printf("%d %d\n", src.rows, src.cols);
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < cols; j++){
+                nDistance = int(sqrt(float(255 - src.at<Vec3b>(i, j)[0]) * float(255 - src.at<Vec3b>(i, j)[0])) +
+                        sqrt(float(255 - src.at<Vec3b>(i, j)[1]) * float(255 - src.at<Vec3b>(i, j)[1])) +
+                                        sqrt(float(255 - src.at<Vec3b>(i, j)[2]) * float(255 - src.at<Vec3b>(i, j)[2])));
+                if(nMinDistance > nDistance){
+                    m_anAirlight.clear();
                     nMinDistance = nDistance;
-                    m_anAirlight[0] = (uchar)imInput->imageData[nY*nStep+nX*3];
-                    m_anAirlight[1] = (uchar)imInput->imageData[nY*nStep+nX*3+1];
-                    m_anAirlight[2] = (uchar)imInput->imageData[nY*nStep+nX*3+2];
+                    m_anAirlight.push_back(src.at<Vec3b>(i, j)[0]);
+                    m_anAirlight.push_back(src.at<Vec3b>(i, j)[1]);
+                    m_anAirlight.push_back(src.at<Vec3b>(i, j)[2]);
                 }
             }
         }
+        printf("success\n");
     }
-    cvReleaseImage(&iplUpperLeft);
-    cvReleaseImage(&iplUpperRight);
-    cvReleaseImage(&iplLowerLeft);
-    cvReleaseImage(&iplLowerRight);
 
-    cvReleaseImage(&iplR);
-    cvReleaseImage(&iplG);
-    cvReleaseImage(&iplB);
 }
 
-float dehazing::NFTrsEstimationColor(int *pnImageR, int *pnImageG, int *pnImageB, int nStartX, int nStartY, int nWid, int nHei)
-{
-    int nCounter;   
-    int nX, nY;     
-    int nEndX;
-    int nEndY;
-
-    int nOutR, nOutG, nOutB;        
-    int nSquaredOut;                
-    int nSumofOuts;                 
-    int nSumofSquaredOuts;          
-    float fTrans, fOptTrs;          
-    int nTrans;                     
-    int nSumofSLoss;                
-    float fCost, fMinCost, fMean;   
+//计算透射率
+float NFTrsEstimationColor(cv::Mat src, float lamda=5.0){
+    int rows = src.rows;
+    int cols = src.cols;
+    int nOutR, nOutG, nOutB, nSquaredOut, nSumofOuts, nSumofSquaredOuts;
+    float fTrans, fOptTrs;
+    int nTrans, nSumofLoss;
+    float fCost, fMinCost, fMean;
     int nNumberofPixels, nLossCount;
-
-    nEndX = __min(nStartX+m_nTBlockSize, nWid); 
-    nEndY = __min(nStartY+m_nTBlockSize, nHei); 
-
-    nNumberofPixels = (nEndY-nStartY)*(nEndX-nStartX) * 3;  
-
-    fTrans = 0.3f;  
+    fTrans = 0.4f;
     nTrans = 427;
-
-    for(nCounter=0; nCounter<7; nCounter++)
-    {
-        nSumofSLoss = 0;
+    nNumberofPixels = rows * cols * 3;
+    for(int cnt = 0; cnt < 5; cnt++){
+        nSumofLoss = 0;
         nLossCount = 0;
         nSumofSquaredOuts = 0;
         nSumofOuts = 0;
-
-        for(nY=nStartY; nY<nEndY; nY++)
-        {
-            for(nX=nStartX; nX<nEndX; nX++)
-            {
-
-                nOutB = ((pnImageB[nY*nWid+nX] - m_anAirlight[0])*nTrans + 128*m_anAirlight[0])>>7; // (I-A)/t + A --> ((I-A)*k*128 + A*128)/128
-                nOutG = ((pnImageG[nY*nWid+nX] - m_anAirlight[1])*nTrans + 128*m_anAirlight[1])>>7;
-                nOutR = ((pnImageR[nY*nWid+nX] - m_anAirlight[2])*nTrans + 128*m_anAirlight[2])>>7;     
-
-                if(nOutR>255)
-                {
-                    nSumofSLoss += (nOutR - 255)*(nOutR - 255);
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < cols; j++){
+                nOutB = ((src.at<Vec3b>(i, j)[0] - m_anAirlight[0]) * nTrans + 128 * m_anAirlight[0]) >> 7; //(I-A)/t+A-->((I-A)*k*128+A*128)/128
+                nOutG = ((src.at<Vec3b>(i, j)[1] - m_anAirlight[1]) * nTrans + 128 * m_anAirlight[1]) >> 7;
+                nOutR = ((src.at<Vec3b>(i, j)[2] - m_anAirlight[2]) * nTrans + 128 * m_anAirlight[2]) >> 7;
+                if(nOutR>255){
+                    nSumofLoss += (nOutR-255)*(nOutR-255);
+                    nLossCount++;
+                }else if(nOutR<0){
+                    nSumofLoss += nOutR*nOutR;
                     nLossCount++;
                 }
-                else if(nOutR < 0)
-                {
-                    nSumofSLoss += nOutR * nOutR;
+                if(nOutG>255){
+                    nSumofLoss += (nOutG-255)*(nOutG-255);
+                    nLossCount++;
+                }else if(nOutG<0){
+                    nSumofLoss += nOutG*nOutG;
                     nLossCount++;
                 }
-                if(nOutG>255)
-                {
-                    nSumofSLoss += (nOutG - 255)*(nOutG - 255);
+                if(nOutB>255){
+                    nSumofLoss += (nOutB-255)*(nOutB-255);
+                    nLossCount++;
+                }else if(nOutB<0){
+                    nSumofLoss += nOutB*nOutB;
                     nLossCount++;
                 }
-                else if(nOutG < 0)
-                {
-                    nSumofSLoss += nOutG * nOutG;
-                    nLossCount++;
-                }
-                if(nOutB>255)
-                {
-                    nSumofSLoss += (nOutB - 255)*(nOutB - 255);
-                    nLossCount++;
-                }
-                else if(nOutB < 0)
-                {
-                    nSumofSLoss += nOutB * nOutB;
-                    nLossCount++;
-                }
-                nSumofSquaredOuts += nOutB * nOutB + nOutR * nOutR + nOutG * nOutG;;
-                nSumofOuts += nOutR + nOutG + nOutB;
+                nSumofSquaredOuts += nOutB*nOutB + nOutR*nOutR + nOutG*nOutG;
+                nSumofOuts += nOutB + nOutG + nOutR;
             }
         }
-        fMean = (float)(nSumofOuts)/(float)(nNumberofPixels);  
-        fCost = m_fLambda1 * (float)nSumofSLoss/(float)(nNumberofPixels) 
-            - ((float)nSumofSquaredOuts/(float)nNumberofPixels - fMean*fMean); 
-
-        if(nCounter==0 || fMinCost > fCost)
-        {
+        fMean = (float)(nSumofOuts)/(float)(nNumberofPixels);
+        fCost = lamda * (float)nSumofLoss / (float)(nNumberofPixels) - ((float)nSumofSquaredOuts/(float)nNumberofPixels-fMean*fMean);
+        if(cnt == 0 || fMinCost > fCost){
             fMinCost = fCost;
             fOptTrs = fTrans;
         }
-
         fTrans += 0.1f;
         nTrans = (int)(1.0f/fTrans*128.0f);
     }
-    return fOptTrs; 
+    return fOptTrs;
+}
+
+
+//float NFTrsEstimationColor(cv::Mat src){
+//    float t = 0.0;
+//    int rows = src.rows;
+//    int cols = src.cols;
+//    float mi = 65536.0;
+//    float mx = 0.0;
+//    for(int i = 0; i < rows; i++){
+//        for(int j = 0; j < cols; j++){
+//            for(int k = 0; k < 3; k++){
+//                mi = std::min(mi, ((float)src.at<Vec3b>(i, j)[k] - (float)m_anAirlight[k]) / ((float)(-m_anAirlight[k])));
+//                mx = std::max(mx, ((float)src.at<Vec3b>(i, j)[k] - (float)m_anAirlight[k]) / float(255.0-(float)m_anAirlight[k]));
+//            }
+//        }
+//    }
+//    printf("%.5f %.5f\n", mi, mx);
+//    t = max(mi, mx);
+//    return t;
+//}
+
+int main(){
+    Mat src = cv::imread("./org-canon.png");
+    m_anAirlight.clear();
+    AirlightEstimation(src);
+    printf("%d %d %d\n", m_anAirlight[0], m_anAirlight[1], m_anAirlight[2]);
+    int rows = src.rows;
+    int cols = src.cols;
+    Mat dst(rows, cols, CV_8UC3);
+    int m_nTVlockSize = 41;
+    for(int nY = 0; nY+m_nTVlockSize < rows; nY+=m_nTVlockSize){
+        for(int nX = 0; nX+m_nTVlockSize < cols; nX+=m_nTVlockSize){
+             Rect temp(nX, nY, m_nTVlockSize, m_nTVlockSize);
+             Mat now = src(temp);
+             float t = NFTrsEstimationColor(now);
+             //printf("%.3f\n", t);
+             //float t = 0.;
+             for(int i = 0; i < m_nTVlockSize; i++){
+                 for(int j = 0; j < m_nTVlockSize; j++){
+                     for(int k = 0; k < 3; k++){
+                         dst.at<Vec3b>(nY+i, nX+j)[k] = int((double)(src.at<Vec3b>(nY+i, nX+j)[k] - m_anAirlight[k]) / t) + m_anAirlight[k];
+                         if(dst.at<Vec3b>(nY+i, nX+j)[k] > 255) dst.at<Vec3b>(nY+i, nX+j)[k] = 255;
+                         else if(dst.at<Vec3b>(nY+i, nX+j)[k] < 0) dst.at<Vec3b>(nY+i, nX+j)[k] = 0;
+                     }
+                 }
+             }
+        }
+    }
+    cv::imshow("origin", src);
+    cv::imshow("result", dst);
+    waitKey(0);
+    return 0;
 }
