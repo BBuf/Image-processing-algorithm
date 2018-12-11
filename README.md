@@ -9,4 +9,5 @@
 - PartialcolorJudge.cpp C++复现了《基于图像分析的偏色检测及颜色校正方法》论文，实现快速判断图片是否存在偏色，详情请看：https://blog.csdn.net/just_sort/article/details/84897976
 - Optimized contrast enhancement for real-time image and video dehazin.cpp 复现了《Optimized contrast enhancement for real-time image and video dehazin》这篇论文，相对于He Kaiming的暗通道去雾，对天空具有天然的免疫力。详情请看：https://blog.csdn.net/just_sort/article/details/84932848
 
+# ImageFiletering中记录了一些实现的滤波算法，包括普通的滤波以及自适应滤波算法
 
