@@ -10,6 +10,7 @@
 - Optimized contrast enhancement for real-time image and video dehazin.cpp C++复现了《Optimized contrast enhancement for real-time image and video dehazin》这篇论文，相对于He Kaiming的暗通道去雾，对天空具有天然的免疫力。算法原理请看：https://blog.csdn.net/just_sort/article/details/84932848
 - AutoLevelAndAutoContrast.cpp C++复现了自动色阶调整和自动对比度调整，其中自动色阶调整可以用于去雾和水下图像恢复。算法原理请看：https://www.cnblogs.com/Imageshop/archive/2011/11/13/2247614.html
 - Contrast Image Correction Method.cpp C++复现了《Contrast Image Correction Method》这篇论文，可以自适应矫正图像。算法原理请看：https://blog.csdn.net/just_sort/article/details/85005510
+- MultiScaleDetailBoosting.cpp C++复现了《DARK IMAGE ENHANCEMENT BASED ON PAIRWISE TARGET CONTRAST AND MULTI-SCALE DETAIL BOOSTING》论文，可以用于提升图像不同程度的细节信息。算法原理请看：https://blog.csdn.net/just_sort/article/details/85007555
 
 # ImageFiletering 复现了一些图像滤波算法
 
