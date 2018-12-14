@@ -1,3 +1,9 @@
+double Transform(double x)
+{
+	if (x <= 0.05)return x * 2.64;
+	return 1.099*pow(x, 0.9 / 2.2) - 0.099;
+}
+
 struct zxy {
 	double x, y, z;
 }s[2500][2500];
