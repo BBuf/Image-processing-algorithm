@@ -6,7 +6,7 @@
 
 ## 3. Feature Extraction 复现了一些图像特征提取算法
 
-## 4. 有意思的论文可以在ISSUE发出来，在本人能力范围内，可以复现并开源
+## 4. License Plate Recognition System 实现车牌号码识别算法
 
 - Retinex MSRCR.cpp 带色彩恢复的多尺度视网膜增强算法。 算法原理请看：http://www.cnblogs.com/Imageshop/archive/2013/04/17/3026881.html
 - ImageDataIncrease.cpp 常见的图片数据扩充。包括一些PS算法 具体为旋转，添加高斯，椒盐噪声，增加老照片效果，增加和降低图像饱和度，对原图缩放，亮度增强，对比度增强，磨皮美白，偏色矫正，同态滤波，过曝，灰度化，轮换通道，图像错切，运动模糊，钝化蒙版，PS滤镜算法之球面化 (凸出和凹陷效果)
