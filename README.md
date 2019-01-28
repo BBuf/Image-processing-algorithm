@@ -1,4 +1,12 @@
-# 记录一些图像处理中的论文及代码复现
+# 本工程记录一些图像处理中的论文复现及数字图像处理知识点
+
+## 1. Correction Algorithm 复现了一些图像矫正算法
+
+## 2. ImageFiletering 复现了一些图像滤波算法
+
+## 3. Feature Extraction 复现了一些图像特征提取算法
+
+## 4. License Plate Recognition System 实现车牌号码识别算法
 
 - Retinex MSRCR.cpp 带色彩恢复的多尺度视网膜增强算法。 算法原理请看：http://www.cnblogs.com/Imageshop/archive/2013/04/17/3026881.html
 - ImageDataIncrease.cpp 常见的图片数据扩充。包括一些PS算法 具体为旋转，添加高斯，椒盐噪声，增加老照片效果，增加和降低图像饱和度，对原图缩放，亮度增强，对比度增强，磨皮美白，偏色矫正，同态滤波，过曝，灰度化，轮换通道，图像错切，运动模糊，钝化蒙版，PS滤镜算法之球面化 (凸出和凹陷效果)
@@ -11,8 +19,11 @@
 - AutoLevelAndAutoContrast.cpp C++复现了自动色阶调整和自动对比度调整，其中自动色阶调整可以用于去雾和水下图像恢复。算法原理请看：https://www.cnblogs.com/Imageshop/archive/2011/11/13/2247614.html
 - Contrast Image Correction Method.cpp C++复现了《Contrast Image Correction Method》这篇论文，可以自适应矫正图像。算法原理请看：https://blog.csdn.net/just_sort/article/details/85005510
 - MultiScaleDetailBoosting.cpp C++复现了《DARK IMAGE ENHANCEMENT BASED ON PAIRWISE TARGET CONTRAST AND MULTI-SCALE DETAIL BOOSTING》论文，可以用于提升图像不同程度的细节信息。算法原理请看：https://blog.csdn.net/just_sort/article/details/85007555
+<<<<<<< HEAD
 - Inrbl.cpp C++复现了《改进非线性亮度提升模型的逆光图像恢复》这篇论文，可以做逆光图像恢复。算法原理请看：https://blog.csdn.net/just_sort/article/details/86681325
 # ImageFiletering 复现了一些图像滤波算法
 
 # Correction Algorithm 复现了一些图像矫正算法
+=======
+>>>>>>> 29ba0929869c1fc4411f2535e66e88b0379017f5
 
