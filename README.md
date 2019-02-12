@@ -22,7 +22,3 @@
 - Contrast Image Correction Method.cpp C++复现了《Contrast Image Correction Method》这篇论文，可以自适应矫正图像。算法原理请看：https://blog.csdn.net/just_sort/article/details/85005510
 - MultiScaleDetailBoosting.cpp C++复现了《DARK IMAGE ENHANCEMENT BASED ON PAIRWISE TARGET CONTRAST AND MULTI-SCALE DETAIL BOOSTING》论文，可以用于提升图像不同程度的细节信息。算法原理请看：https://blog.csdn.net/just_sort/article/details/85007555
 - Inrbl.cpp C++复现了《改进非线性亮度提升模型的逆光图像恢复》这篇论文，可以做逆光图像恢复。算法原理请看：https://blog.csdn.net/just_sort/article/details/86681325
-# ImageFiletering 复现了一些图像滤波算法
-
-# Correction Algorithm 复现了一些图像矫正算法
-
