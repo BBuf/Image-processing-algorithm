@@ -11,7 +11,6 @@ using namespace std;
 using namespace cv;
 
 //Method2
-#define PI 3.1415926
 double log2(double N) {
 	return log10(N) / log10(2.0);
 }
@@ -19,63 +18,75 @@ double log2(double N) {
 Mat Inrbl(Mat src, double k) {
 	int row = src.rows;
 	int col = src.cols;
-	Mat dst(row, col, CV_64FC3);
+	Mat dst(row, col, CV_8UC3);
 	Mat dsthsi(row, col, CV_64FC3);
 
 	//RGB2HSI
-	Mat H = Mat(row, col, CV_64FC1);
-	Mat S = Mat(row, col, CV_64FC1);
-	Mat I = Mat(row, col, CV_64FC1);
+	Mat HH = Mat(row, col, CV_64FC1);
+	Mat SS = Mat(row, col, CV_64FC1);
+	Mat II = Mat(row, col, CV_64FC1);
 	int mp[256] = { 0 };
 	double mp2[256] = { 0.0 };
 	for (int i = 0; i < row; i++) {
 		for (int j = 0; j < col; j++) {
-			double h, s, newi, th;
-			double B = (double)src.at<Vec3b>(i, j)[0] / 255.0;
-			double G = (double)src.at<Vec3b>(i, j)[1] / 255.0;
-			double R = (double)src.at<Vec3b>(i, j)[2] / 255.0;
-			double mi, mx;
-			if (R > G && R > B) {
-				mx = R;
-				mi = min(G, B);
+			double b = src.at<Vec3b>(i, j)[0] / 255.0;
+			double g = src.at<Vec3b>(i, j)[1] / 255.0;
+			double r = src.at<Vec3b>(i, j)[2] / 255.0;
+			double minn = min(b, min(g, r));
+			double maxx = max(b, max(g, r));
+			double H = 0;
+			double S = 0;
+			double I = (minn + maxx) / 2.0f;
+			if (maxx == minn) {
+				dsthsi.at<Vec3f>(i, j)[0] = H;
+				dsthsi.at<Vec3f>(i, j)[1] = S;
+				dsthsi.at<Vec3f>(i, j)[2] = I;
+				HH.at<double>(i, j) = H;
+				SS.at<double>(i, j) = S;
+				II.at<double>(i, j) = I;
 			}
 			else {
-				if (G > B) {
-					mx = G;
-					mi = min(R, B);
+				double delta = maxx - minn;
+				if (I < 0.5) {
+					S = delta / (maxx + minn);
 				}
 				else {
-					mx = B;
-					mi = min(R, G);
+					S = delta / (2.0 - maxx - minn);
 				}
+				if (r == maxx) {
+					if (g > b) {
+						H = (g - b) / delta;
+					}
+					else {
+						H = 6.0 + (g - b) / delta;
+					}
+				}
+				else if (g == maxx) {
+					H = 2.0 + (b - r) / delta;
+				}
+				else {
+					H = 4.0 + (r - g) / delta;
+				}
+				H /= 6.0; //除以6，表示在那个部分
+				if (H < 0.0)
+					H += 1.0;
+				if (H > 1)
+					H -= 1;
+				H = (int)(H * 360); //转成[0, 360]
+				dsthsi.at<Vec3f>(i, j)[0] = H;
+				dsthsi.at<Vec3f>(i, j)[1] = S;
+				dsthsi.at<Vec3f>(i, j)[2] = I;
+				HH.at<double>(i, j) = H;
+				SS.at<double>(i, j) = S;
+				II.at<double>(i, j) = I;
 			}
-			newi = (R + G + B) / 3.0;
-			if (newi < 0)  newi = 0;
-			else if (newi > 1) newi = 1.0;
-			if (newi == 0 || mx == mi) {
-				s = 0;
-				h = 0;
-			}
-			else {
-				s = 1 - mi / newi;
-				th = (R - G) * (R - G) + (R - B) * (G - B);
-				th = sqrt(th) + 1e-5;
-				th = acos(((R - G + R - B)*0.5) / th);
-				if (G >= B) h = th;
-				else h = 2 * PI - th;
-			}
-			h = h / (2 * PI);
-			H.at<double>(i, j) = h;
-			S.at<double>(i, j) = s;
-			I.at<double>(i, j) = newi;
-
-			dsthsi.at<Vec3d>(i, j)[2] = h;
-			dsthsi.at<Vec3d>(i, j)[1] = s;
-			dsthsi.at<Vec3d>(i, j)[0] = newi;
+		}
+	}
+	for (int i = 0; i < row; i++) {
+		for (int j = 0; j < col; j++) {
 			mp[(int)((src.at<Vec3b>(i, j)[0] + src.at<Vec3b>(i, j)[1] + src.at<Vec3b>(i, j)[2]) / 3)]++;
 		}
 	}
-
 	//Ostu阈值
 	for (int i = 0; i < 256; i++) {
 		mp2[i] = (double)mp[i] / (double)(row * col);
@@ -105,7 +116,7 @@ Mat Inrbl(Mat src, double k) {
 	int cnt = 0;
 	for (int i = 0; i < row; i++) {
 		for (int j = 0; j < col; j++) {
-			if (I.at<double>(i, j) <= ThresHold) {
+			if (II.at<double>(i, j) <= ThresHold) {
 				cnt++;
 			}
 		}
@@ -116,78 +127,54 @@ Mat Inrbl(Mat src, double k) {
 	for (int i = 0; i < row; i++) {
 		for (int j = 0; j < col; j++) {
 			double D, C;
-			if (I.at<double>(i, j) <= ThresHold) {
+			if (II.at<double>(i, j) <= ThresHold) {
 				D = A;
-				C = 1.0 / log2(D + 1);
+				C = 1.0 / log2(D + 1.0);
 			}
 			else {
-				D = (double)(ThresHold * A - ThresHold) / double((1 - ThresHold) * (I.at<double>(i, j))) - (double)(ThresHold * A - 1) / (1 - ThresHold);
+				D = (double)(ThresHold * A - ThresHold) / double((1 - ThresHold) * (II.at<double>(i, j))) - (double)(ThresHold * A - 1.0) / (1.0 - ThresHold);
 				C = 1.0 / log2(D + 1);
 			}
-			I.at<double>(i, j) = (C * log2(D * (double)I.at<double>(i, j) + 1));
+			II.at<double>(i, j) = (C * log2(D * (double)II.at<double>(i, j) + 1.0));
 		}
 	}//
 
 	 //HSI2RGB
 	for (int i = 0; i < row; i++) {
 		for (int j = 0; j < col; j++) {
-			double preh = H.at<double>(i, j) * 2 * PI;//?
-			double pres = S.at<double>(i, j);
-			double prei = I.at<double>(i, j);
-			double r = 0, g = 0, b = 0;
-			double t1, t2, t3;
-			t1 = (1.0 - pres) / 3.0;
-			if (preh >= 0 && preh < (PI * 2 / 3)) {
-				b = t1;
-				t2 = pres * cos(preh);
-				t3 = cos(PI / 3 - preh);
-				r = (1 + t2 / t3) / 3;
-				//g = 1.0 - r - b;
-				r = 3 * prei * r;
-				//g = 3 * g * prei;
-				b = 3 * prei * b;
-				g = 3 * prei - (r + b);
+			double r, g, b, M1, M2;
+			double H = HH.at<double>(i, j);
+			double S = SS.at<double>(i, j);
+			double I = II.at<double>(i, j);
+			double hue = H / 360;
+			if (S == 0) {//灰色
+				r = g = b = I;
 			}
-			else if (preh >= (PI * 2 / 3) && preh < (PI * 4 / 3)) {
-				r = t1;
-				t2 = pres * cos(preh - 2 * PI / 3);
-				t3 = cos(PI - preh);
-				g = (1 + t2 / t3) / 3;
-				//b = 1 - r - g;
-				r = 3 * prei * r;
-				g = 3 * g * prei;
-				//b = 3 * prei * b;
-				b = 3 * prei - (r + g);
+			else {
+				if (I <= 0.5) {
+					M2 = I * (1.0 + S);
+				}
+				else {
+					M2 = I + S - I * S;
+				}
+				M1 = (2.0 * I - M2);
+				r = get_Ans(M1, M2, hue + 1.0 / 3.0);
+				g = get_Ans(M1, M2, hue);
+				b = get_Ans(M1, M2, hue - 1.0 / 3.0);
 			}
-			else if (preh >= (PI * 4 / 3) && preh <= (PI * 2)) {
-				g = t1;
-				t2 = pres * cos(preh - 4 * PI / 3);
-				t3 = cos(PI * 5 / 3 - preh);
-				b = (1 + t2 / t3) / 3;
-				//r = 1 - g - b;
-				//r = 3 * prei * r;
-				g = 3 * g * prei;
-				b = 3 * prei * b;
-				r = 3 * prei - (g + b);
-			}
-
-			dst.at<Vec3d>(i, j)[0] = b;
-			dst.at<Vec3d>(i, j)[1] = g;
-			dst.at<Vec3d>(i, j)[2] = r;
-
-			/*
-			dst.at<Vec3b>(i, j)[0] =(b * 255.0);
-			dst.at<Vec3b>(i, j)[1] = (int)(g * 255.0);
-			dst.at<Vec3b>(i, j)[2] = (int)(r * 255.0);*/
-			//printf("%d %d %d\n", (int)(r*255), (int)(g*255), (int)(b*255));	
+			dst.at<Vec3b>(i, j)[0] = (int)(b * 255);
+			dst.at<Vec3b>(i, j)[1] = (int)(g * 255);
+			dst.at<Vec3b>(i, j)[2] = (int)(r * 255);
 		}
 	}
-	//}
-
 	return dst;
-	//return dsthsi;
 }
 
 int main() {
-	
+	Mat src = cv::imread("G:\\1.jpg");
+	Mat dst = Inrbl(src, 50);
+	cv::imshow("origin", src);
+	cv::imshow("result", dst);
+	waitKey(0);
+	return 0;
 }
