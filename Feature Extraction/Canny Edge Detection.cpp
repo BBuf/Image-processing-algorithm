@@ -145,8 +145,8 @@ Mat CannyEdgeDetection(cv::Mat src, int kSize, double hightThres, double lowThre
         for(int j = 1; j < col - 1; j++){
             if(grad.at<double>(i, j) == lowValue){
                 //3*3 区域强度
-                rect.x = i-1;
-                rect.y = j-1;
+                rect.x = j-1;
+                rect.y = i-1;
                 rect.width = 3;
                 rect.height = 3;
                 for(int x = 0; x < 3; x++){
