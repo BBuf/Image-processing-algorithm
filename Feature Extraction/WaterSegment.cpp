@@ -51,7 +51,7 @@ Mat WaterSegment(Mat src) {
 	//8. 使用findContours寻找marks
 	vector<vector<Point>> contours;
 	findContours(grayImage, contours, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(-1, -1));
-	Mat marks;
+	Mat marks = Mat::zeros(grayImage.size(), CV_32SC1);
 	for (size_t i = 0; i < contours.size(); i++)
 	{
 		//static_cast<int>(i+1)是为了分水岭的标记不同，区域1、2、3...这样才能分割
