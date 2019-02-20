@@ -10,7 +10,7 @@ using namespace cv;
 //RGB转化为灰度图
 Mat speed_rgb2gray(Mat src) {
 	Mat dst(src.rows, src.cols, CV_8UC1);
-//#pragma omp parallel for num_threads(4)
+	//#pragma omp parallel for num_threads(4)
 	for (int i = 0; i < src.rows; i++) {
 		for (int j = 0; j < src.cols; j++) {
 			dst.at<uchar>(i, j) = ((src.at<Vec3b>(i, j)[0] << 18) + (src.at<Vec3b>(i, j)[0] << 15) + (src.at<Vec3b>(i, j)[0] << 14) +
@@ -49,10 +49,10 @@ void get_Pad(int pad_Height, int pad_Width, int row, int col, float *A_pad, floa
 }
 
 //pad_A的转换，以适用于openblas，row2col的思想
-void convert_A(float *A_convert, const int OutHeight, const int OutWidth, const int pad_Height, const int pad_Width, float *A_pad) {
+void convert_A(float *A_convert, const int OutHeight, const int OutWidth, const int convAw, const int pad_Height, const int pad_Width, float *A_pad) {
 	for (int i = 0; i < OutHeight; i++) {
 		for (int j = 0; j < OutWidth; j++) {
-			int index = i * OutHeight * pad_Height + j * pad_Width;
+			int index = i * OutHeight * convAw + j * convAw;
 			int col1 = i * pad_Height + j;
 			//row2col展开，这里是3*3卷积，展开9次
 			A_convert[index] = A_pad[col1];
@@ -119,7 +119,7 @@ int main() {
 	const int convAh = OutHeight * OutWidth;
 	//转换被卷积矩阵
 	float *A_convert = new float[convAh * convAw];
-	convert_A(A_convert, OutHeight, OutWidth, pad_Height, pad_Width, A_pad);
+	convert_A(A_convert, OutHeight, OutWidth, convAw,pad_Height, pad_Width, A_pad);
 	//定义卷积输出矩阵
 	float *C = new float[convAh * 1];
 	//sgemm算法计算输出矩阵
