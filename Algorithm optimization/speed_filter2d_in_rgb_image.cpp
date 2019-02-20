@@ -39,6 +39,33 @@ void get_Pad(int pad_Height, int pad_Width, int row, int col, int channel, float
 	}
 }
 
+//pad_A的转换，以适用于Openblas
+void convert_A(float *A_convert, const int OutHeight, const int OutWidth, const int convAw, const int pad_Height, const int pad_Width, int channel, float *A_pad) {
+	int pad_one_channel = pad_Height * pad_Width;
+	int seg = channel * convAw;
+	for (int c = 0; c < channel; c++) {
+		for (int i = 0; i < OutHeight; i++) {
+			for (int j = 0; j < OutWidth; j++) {
+				int index = c * convAw + i * OutHeight * seg + j * seg;
+				int col1 = c*pad_one_channel + i * pad_Height + j;
+				A_convert[index] = A_pad[col1];
+				A_convert[index + 1] = A_pad[col1 + 1];
+				A_convert[index + 2] = A_pad[col1 + 2];
+
+				int col2 = c*pad_one_channel + (i + 1) * pad_Height + j;
+				A_convert[index + 3] = A_pad[col2];
+				A_convert[index + 4] = A_pad[col2 + 1];
+				A_convert[index + 5] = A_pad[col2 + 2];
+
+				int col3 = c*pad_one_channel + (i + 2) * pad_Height + j;
+				A_convert[index + 6] = A_pad[col3];
+				A_convert[index + 7] = A_pad[col3 + 1];
+				A_convert[index + 8] = A_pad[col3 + 2];
+			}
+		}
+	}
+}
+
 
 int main() {
 	//RGB图
@@ -77,5 +104,10 @@ int main() {
 	const int pad_Width = col + 2 * pad;
 	float *A_pad = new float[pad_Height * pad_Width * channel];
 	get_Pad(pad_Height, pad_Width, row, col, channel, A_pad, A);
-	//
+	//定义被卷积矩阵宽高
+	const int convAw = KernelHeight * KernelWidth;
+	const int convAh = OutHeight * OutWidth;
+	//转换被卷积矩阵
+	float *A_convert = new float[convAh * convAw * channel];
+	convert_A(A_convert, OutHeight, OutWidth, convAw,pad_Height, pad_Width, channel, A_pad);
 }
