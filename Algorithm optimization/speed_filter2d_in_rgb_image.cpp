@@ -66,6 +66,98 @@ void convert_A(float *A_convert, const int OutHeight, const int OutWidth, const 
 	}
 }
 
+//kernel 转换以适用opeblas
+void convertB(const int convAw, const int channel, float *B, float *B_convert) {
+	//3通道3个输出，可以结合https://blog.csdn.net/hai008007/article/details/80209436来理解
+	int block_A_convert = convAw * channel;
+	for (int c = 0; c < channel; c++) {
+		int block = c * block_A_convert;
+		for (int i = 0; i < convAw; i++) {
+			for (int j = 0; j < channel; j++) {
+				if (c == j)
+				{
+					B_convert[block + i * channel + j] = B[c * convAw + i];
+				}
+				else
+				{
+					B_convert[block + i * channel + j] = 0;
+				}
+			}
+		}
+	}
+}
+
+//OpenBlas矩阵乘法运算
+void Matrixmul_blas(const int convAh, const int convAw, float *A_convert, float *B_convert, float *C, const int channel) {
+	const enum CBLAS_ORDER Order = CblasRowMajor;
+	const enum CBLAS_TRANSPOSE TransA = CblasNoTrans;
+	const enum CBLAS_TRANSPOSE TransB = CblasNoTrans;
+	const int M = convAh;//A的行数，C的行数
+	const int N = channel;//B的列数，C的列数
+	const int K = convAw * channel;//A的列数，B的行数
+	const float alpha = 1;
+	const float beta = 0;
+	const int lda = K;//A的列
+	const int ldb = N;//B的列
+	const int ldc = N;//C的列
+
+	cblas_sgemm(Order, TransA, TransB, M, N, K, alpha, A_convert, lda, B_convert, ldb, beta, C, ldc);
+}
+
+//将C转换为常用的矩阵排列
+void convertC(const int channel, const int convAh, float *C_convert, float *C) {
+	for (int c = 0; c < channel; c++) {
+		for (int i = 0; i < convAh; i++) {
+			C_convert[c*convAh + i] = C[i * channel + c];
+		}
+	}
+}
+
+//验证结果是否正确
+void checkResult(const int channel, const int row, const int col, const float *A, const int kernelWidth, const int kernelHeight, const float *B, const int outHeight, const int outWidth, float *C_convert)
+{
+	cout << "A is:" << endl;
+	for (int c = 0; c < channel; c++)
+	{
+		for (int i = 0; i < row; i++)
+		{
+			for (int j = 0; j < col; j++)
+			{
+				cout << A[c * row * col + i * row + j] << " ";
+			}
+			cout << endl;
+		}
+		cout << endl;
+	}
+
+	cout << "B is:" << endl;
+	for (int c = 0; c < channel; c++)
+	{
+		for (int i = 0; i < kernelHeight; i++)
+		{
+			for (int j = 0; j < kernelWidth; j++)
+			{
+				cout << B[c * kernelHeight * kernelWidth + i * kernelHeight + j] << " ";
+			}
+			cout << endl;
+		}
+		cout << endl;
+	}
+
+	cout << "C is:" << endl;
+	for (int c = 0; c < channel; c++)
+	{
+		for (int i = 0; i < outHeight; i++)
+		{
+			for (int j = 0; j < outWidth; j++)
+			{
+				cout << C_convert[c * outHeight * outWidth + i * outHeight + j] << " ";
+			}
+			cout << endl;
+		}
+		cout << endl;
+	}
+}
 
 int main() {
 	//RGB图
@@ -107,7 +199,20 @@ int main() {
 	//定义被卷积矩阵宽高
 	const int convAw = KernelHeight * KernelWidth;
 	const int convAh = OutHeight * OutWidth;
-	//转换被卷积矩阵
+	//转换被卷积矩阵适应OpenBlas
 	float *A_convert = new float[convAh * convAw * channel];
-	convert_A(A_convert, OutHeight, OutWidth, convAw,pad_Height, pad_Width, channel, A_pad);
+	convert_A(A_convert, OutHeight, OutWidth, convAw, pad_Height, pad_Width, channel, A_pad);
+	//转换卷积核适应OpenBlas
+	float *B_convert = new float[channel * KernelHeight * KernelWidth * channel];
+	convertB(convAw, channel, B, B_convert);
+	//定义卷积输出矩阵
+	float *C = new float[convAh * channel];
+	//cblas计算输出矩阵
+	Matrixmul_blas(convAh, convAw, A_convert, B_convert, C, channel);
+	//将输出转换为常用的矩阵形式
+	float *C_convert = new float[OutHeight * OutWidth * channel];
+	convertC(channel, convAh, C_convert, C);
+	//输出验证
+	checkResult(channel, row, col, A, KernelWidth, KernelHeight, B, OutHeight, OutWidth, C_convert);
+	return 0;
 }
