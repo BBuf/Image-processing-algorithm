@@ -47,57 +47,48 @@ Mat speed_MedianFilter(Mat src) {
 	return  dst;
 }
 
-//使用AVX指令集优化中值滤波
+//使用AVX指令集优化中值滤波，相比串行，想你那好提升约60倍
 
-Mat AVX_MedianFilter(Mat src, unsigned char * __restrict temp) {
-	int row = src.rows;
-	int col = src.cols;
-	Mat dst(row, col, CV_8UC3);
-	unsigned char * __restrict temp2 = new unsigned char[row * col];
-	for (int i = 0; i < row; i++) {
-		for (int j = 0; j < col; j++) {
-			temp2[i * col + j] = src.at<uchar>(i, j);
-		}
-	}
-	for (int i = 1; i < row - 1; i++) {
+void medianFilterAVX(int height, int width, unsigned char* __restrict src, unsigned char* __restrict dst) {
+	for (int i = 1; i < height - 1; i++) {
 		int j;
-		for (j = 1; j < col - 1 - 32; j += 32) {
+		for (j = 1; j < width - 1 - 32; j += 32) {
 			__m256i a[9];
-			a[0] = _mm256_loadu_si256((__m256i*)(temp2 + i * col + j));
-			a[1] = _mm256_loadu_si256((__m256i*)(temp2 + i * col + j + 1));
-			a[2] = _mm256_loadu_si256((__m256i*)(temp2 + i * col + j - 1));
+			a[0] = _mm256_loadu_si256((__m256i*)(src + i * width + j));
+			a[1] = _mm256_loadu_si256((__m256i*)(src + i * width + j + 1));
+			a[2] = _mm256_loadu_si256((__m256i*)(src + i * width + j - 1));
 
-			a[3] = _mm256_loadu_si256((__m256i*)(temp2 + (i + 1) * col + j));
-			a[4] = _mm256_loadu_si256((__m256i*)(temp2 + (i + 1) * col + j + 1));
-			a[5] = _mm256_loadu_si256((__m256i*)(temp2 + (i + 1) * col + j - 1));
+			a[3] = _mm256_loadu_si256((__m256i*)(src + (i + 1) * width + j));
+			a[4] = _mm256_loadu_si256((__m256i*)(src + (i + 1) * width + j + 1));
+			a[5] = _mm256_loadu_si256((__m256i*)(src + (i + 1) * width + j - 1));
 
-			a[6] = _mm256_loadu_si256((__m256i*)(temp2 + (i - 1) * col + j));
-			a[7] = _mm256_loadu_si256((__m256i*)(temp2 + (i - 1) * col + j + 1));
-			a[8] = _mm256_loadu_si256((__m256i*)(temp2 + (i - 1) * col + j - 1));
+			a[6] = _mm256_loadu_si256((__m256i*)(src + (i - 1) * width + j));
+			a[7] = _mm256_loadu_si256((__m256i*)(src + (i - 1) * width + j + 1));
+			a[8] = _mm256_loadu_si256((__m256i*)(src + (i - 1) * width + j - 1));
 
 			for (int ii = 0; ii < 5; ii++) {
 				for (int jj = ii + 1; jj < 9; jj++) {
-					__m256i larger = _mm256_max_epu8(a[ii], a[jj]);
-					__m256i smaller = _mm256_min_epu8(a[ii], a[jj]);
-					a[ii] = smaller;
-					a[jj] = larger;
+					__m256i large = _mm256_max_epu8(a[ii], a[jj]);
+					__m256i small = _mm256_min_epu8(a[ii], a[jj]);
+					a[ii] = small;
+					a[jj] = large;
 				}
 			}
-			_mm256_storeu_si256((__m256i*)(temp + i * col + j), a[4]);
+			_mm256_storeu_si256((__m256i*)(dst + i * width + j), a[4]);
 		}
-		for (int je = j; je < col - 1; je++) {
+		for (int je = j; je < width - 1; je++) {
 			unsigned char a[9];
-			a[0] = src.at<uchar>(i, je);
-			a[1] = src.at<uchar>(i, je + 1);
-			a[2] = src.at<uchar>(i, je - 1);
+			a[0] = src[i * width + je];
+			a[1] = src[i * width + je + 1];
+			a[2] = src[i * width + je - 1];
 
-			a[3] = src.at<uchar>(i + 1, je);
-			a[4] = src.at<uchar>(i + 1, je + 1);
-			a[5] = src.at<uchar>(i + 1, je - 1);
+			a[3] = src[(i + 1) * width + je];
+			a[4] = src[(i + 1) * width + je + 1];
+			a[5] = src[(i + 1) * width + je - 1];
 
-			a[6] = src.at<uchar>(i - 1, je);
-			a[7] = src.at<uchar>(i - 1, je + 1);
-			a[8] = src.at<uchar>(i - 1, je - 1);
+			a[6] = src[(i - 1) * width + je];
+			a[7] = src[(i - 1) * width + je + 1];
+			a[8] = src[(i - 1) * width + je - 1];
 			for (int ii = 0; ii < 5; ii++) {
 				for (int jj = ii + 1; jj < 9; jj++) {
 					unsigned char large = std::max<unsigned char>(a[ii], a[jj]);
@@ -106,23 +97,30 @@ Mat AVX_MedianFilter(Mat src, unsigned char * __restrict temp) {
 					a[jj] = large;
 				}
 			}
-			temp[i * col + je] = a[4];
+			dst[i * width + je] = a[4];
 		}
 	}
-	for (int i = 1; i < row - 1; i++) {
-		for (int j = 1; j < col - 1; j++) {
-			dst.at<uchar>(i, j) = (temp[i * col + j]);
-		}
+	for (int i = 0; i < width; i++) {
+		dst[i] = src[i];
+		dst[(height - 1) * width + i] = src[(height - 1) * width + i];
 	}
-	for (int i = 0; i < row; i++) {
-		dst.at<uchar>(i, 0) = src.at<uchar>(i, 0);
-		dst.at<uchar>(i, col - 1) = src.at<uchar>(i, col - 1);
+	for (int i = 0; i < height; i++) {
+		dst[i * width] = src[i * width];
+		dst[i * width + width - 1] = src[i * width + width - 1];
 	}
-	for (int i = 0; i < col; i++) {
-		dst.at<uchar>(0, i) = src.at<uchar>(0, i);
-		dst.at<uchar>(row - 1, i) = src.at<uchar>(row - 1, i);
-	}
-	return dst;
+}
+
+Mat AVX_MedianFilter(Mat src) {
+	int row = src.rows;
+	int col = src.cols;
+	unsigned char * __restrict data = src.data;
+	unsigned char *dst = new unsigned char[row * col];
+	//for (int i = 0; i < row * col; i++) {
+	//	printf("%d\n", data[i]);
+	//}
+	medianFilterAVX(row, col, data, dst);
+	Mat res(row, col, CV_8UC1, dst);
+	return res;
 }
 
 //使用Openmp加速中值滤波，在6核Core i7 3930K上，12线程的加速比为8.4
@@ -192,14 +190,13 @@ Mat speed_rgb2gray(Mat src) {
 }
 
 int main() {
-	Mat src = cv::imread("F:\\1.jpg");
+	Mat src = cv::imread("F:\\2.jpg");
 	src = speed_rgb2gray(src);
 	int row = src.rows;
 	int col = src.cols;
-	unsigned char * __restrict temp = new unsigned char[row * col];
 	Mat dst1 = speed_MedianFilter(src);
 	cv::imshow("res1", dst1);
-	Mat dst2 = AVX_MedianFilter(src, temp);
+	Mat dst2 = AVX_MedianFilter(src);
 	cv::imshow("res2", dst2);
 	Mat dst3 = Openmp_MedianFilter(src);
 	cv::imshow("res3", dst3);
