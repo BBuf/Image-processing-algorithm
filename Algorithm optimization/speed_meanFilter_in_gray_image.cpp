@@ -4,7 +4,7 @@
 using namespace cv;
 using namespace std;
 //所有代码针对灰度图，RGB分为3个通道处理
-//中值滤波串行代码
+//均值滤波串行代码
 Mat SerialMedianFiltering(Mat src) {
 	int row = src.rows;
 	int col = src.cols;
