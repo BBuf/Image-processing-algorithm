@@ -6,45 +6,53 @@ using namespace cv;
 using namespace std;
 //所有代码针对灰度图，RGB分为3个通道处理
 //中值滤波串行代码
-Mat speed_MedianFilter(Mat src) {
-	int row = src.rows;
-	int col = src.cols;
-	Mat dst(row, col, CV_8UC1);
-	for (int i = 1; i < row - 1; i++) {
-		for (int j = 1; j < col - 1; j++) {
+void meanFilter(int height, int width, unsigned char * __restrict src, unsigned char * __restrict dst) {
+	for (int i = 1; i < height - 1; i++) {
+		for (int j = 1; j < width - 1; j++) {
 			unsigned char a[9];
-			a[0] = src.at<uchar>(i, j);
-			a[1] = src.at<uchar>(i, j + 1);
-			a[2] = src.at<uchar>(i, j - 1);
+			a[0] = src[i * width + j];
+			a[1] = src[i * width + j + 1];
+			a[2] = src[i * width + j - 1];
 
-			a[3] = src.at<uchar>(i + 1, j);
-			a[4] = src.at<uchar>(i + 1, j + 1);
-			a[5] = src.at<uchar>(i + 1, j - 1);
+			a[3] = src[(i + 1) * width + j];
+			a[4] = src[(i + 1) * width + j + 1];
+			a[5] = src[(i + 1) * width + j - 1];
 
-			a[6] = src.at<uchar>(i - 1, j);
-			a[7] = src.at<uchar>(i - 1, j + 1);
-			a[8] = src.at<uchar>(i - 1, j - 1);
+			a[6] = src[(i - 1) * width + j];
+			a[7] = src[(i - 1) * width + j + 1];
+			a[8] = src[(i - 1) * width + j - 1];
 			for (int ii = 0; ii < 5; ii++) {
 				for (int jj = ii + 1; jj < 9; jj++) {
 					if (a[ii] > a[jj]) {
-						unsigned char tmp = a[ii];
-						a[jj] = a[ii];
-						a[jj] = tmp;
+						unsigned char temp = a[ii];
+						a[ii] = a[jj];
+						a[jj] = temp;
 					}
 				}
 			}
-			dst.at<uchar>(i, j) = a[4];
+			dst[i * width + j] = a[4];
 		}
 	}
-	for (int i = 0; i < row; i++) {
-		dst.at<uchar>(i, 0) = src.at<uchar>(i, 0);
-		dst.at<uchar>(i, col - 1) = src.at<uchar>(i, col - 1);
+	for (int i = 0; i < width; i++) {
+		dst[i] = src[i];
+		dst[(height - 1) * width + i] = src[(height - 1) * width + i];
 	}
-	for (int i = 0; i < col; i++) {
-		dst.at<uchar>(0, i) = src.at<uchar>(0, i);
-		dst.at<uchar>(row - 1, i) = src.at<uchar>(row - 1, i);
+	for (int i = 0; i < height; i++) {
+		dst[i * width] = src[i * width];
+		dst[i * width + width - 1] = src[i * width + width - 1];
 	}
-	return  dst;
+}
+Mat speed_MedianFilter(Mat src) {
+	int row = src.rows;
+	int col = src.cols;
+	unsigned char * data = (unsigned char *)src.data;
+	unsigned char *dst = new unsigned char[row * col];
+	//for (int i = 0; i < row * col; i++) {
+	//	printf("%d\n", data[i]);
+	//}
+	meanFilter(row, col, data, dst);
+	Mat res(row, col, CV_8UC1, dst);
+	return res;
 }
 
 //使用AVX指令集优化中值滤波，相比串行，想你那好提升约60倍
@@ -113,7 +121,7 @@ void medianFilterAVX(int height, int width, unsigned char* __restrict src, unsig
 Mat AVX_MedianFilter(Mat src) {
 	int row = src.rows;
 	int col = src.cols;
-	unsigned char * __restrict data = src.data;
+	unsigned char * data = (unsigned char *)src.data;
 	unsigned char *dst = new unsigned char[row * col];
 	//for (int i = 0; i < row * col; i++) {
 	//	printf("%d\n", data[i]);
@@ -125,51 +133,60 @@ Mat AVX_MedianFilter(Mat src) {
 
 //使用Openmp加速中值滤波，在6核Core i7 3930K上，12线程的加速比为8.4
 
+void MultiThtreadsFilter(int height, int width, unsigned char * __restrict src, unsigned char * __restrict dst) {
+#pragma omp parallel default(none) shared(src, dst, row, col) num_threads(12)
+{
+#pragma omp for nowait 
+	for (int i = 1; i < height - 1; i++) {
+		for (int j = 1; j < width - 1; j++) {
+			unsigned char a[9];
+			a[0] = src[i * width + j];
+			a[1] = src[i * width + j + 1];
+			a[2] = src[i * width + j - 1];
+
+			a[3] = src[(i + 1) * width + j];
+			a[4] = src[(i + 1) * width + j + 1];
+			a[5] = src[(i + 1) * width + j - 1];
+
+			a[6] = src[(i - 1) * width + j];
+			a[7] = src[(i - 1) * width + j + 1];
+			a[8] = src[(i - 1) * width + j - 1];
+			for (int ii = 0; ii < 5; ii++) {
+				for (int jj = ii + 1; jj < 9; jj++) {
+					if (a[ii] > a[jj]) {
+						unsigned char temp = a[ii];
+						a[ii] = a[jj];
+						a[jj] = temp;
+					}
+				}
+			}
+			dst[i * width + j] = a[4];
+		}
+	}
+#pragma omp for nowait 
+	for (int i = 0; i < width; i++) {
+		dst[i] = src[i];
+		dst[(height - 1) * width + i] = src[(height - 1) * width + i];
+	}
+#pragma omp for nowait 
+	for (int i = 0; i < height; i++) {
+		dst[i * width] = src[i * width];
+		dst[i * width + width - 1] = src[i * width + width - 1];
+	}
+}
+}
+
 Mat Openmp_MedianFilter(Mat src) {
 	int row = src.rows;
 	int col = src.cols;
-	Mat dst(row, col, CV_8UC1);
-#pragma omp parallel default(none) shared(src, dst, row, col) num_threads(12)
-	{
-#pragma omp for nowait 
-		for (int i = 1; i < row - 1; i++) {
-			for (int j = 1; j < col - 1; j++) {
-				unsigned char a[9];
-				a[0] = src.at<uchar>(i, j);
-				a[1] = src.at<uchar>(i, j + 1);
-				a[2] = src.at<uchar>(i, j - 1);
-
-				a[3] = src.at<uchar>(i + 1, j);
-				a[4] = src.at<uchar>(i + 1, j + 1);
-				a[5] = src.at<uchar>(i + 1, j - 1);
-
-				a[6] = src.at<uchar>(i - 1, j);
-				a[7] = src.at<uchar>(i - 1, j + 1);
-				a[8] = src.at<uchar>(i - 1, j - 1);
-				for (int ii = 0; ii < 5; ii++) {
-					for (int jj = ii + 1; jj < 9; jj++) {
-						if (a[ii] > a[jj]) {
-							unsigned char tmp = a[ii];
-							a[jj] = a[ii];
-							a[jj] = tmp;
-						}
-					}
-				}
-				dst.at<uchar>(i, j) = a[4];
-			}
-		}
-#pragma omp for nowait
-		for (int i = 0; i < row; i++) {
-			dst.at<uchar>(i, 0) = src.at<uchar>(i, 0);
-			dst.at<uchar>(i, col - 1) = src.at<uchar>(i, col - 1);
-		}
-#pragma omp for nowait
-		for (int i = 0; i < col; i++) {
-			dst.at<uchar>(0, i) = src.at<uchar>(0, i);
-			dst.at<uchar>(row - 1, i) = src.at<uchar>(row - 1, i);
-		}
-	}
-	return  dst;
+	unsigned char * data = (unsigned char *)src.data;
+	unsigned char *dst = new unsigned char[row * col];
+	//for (int i = 0; i < row * col; i++) {
+	//	printf("%d\n", data[i]);
+	//}
+	MultiThtreadsFilter(row, col, data, dst);
+	Mat res(row, col, CV_8UC1, dst);
+	return res;
 }
 
 Mat speed_rgb2gray(Mat src) {
@@ -190,7 +207,7 @@ Mat speed_rgb2gray(Mat src) {
 }
 
 int main() {
-	Mat src = cv::imread("F:\\2.jpg");
+	Mat src = cv::imread("F:\\2.png");
 	src = speed_rgb2gray(src);
 	int row = src.rows;
 	int col = src.cols;
