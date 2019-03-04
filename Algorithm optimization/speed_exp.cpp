@@ -5,7 +5,7 @@ inline float exp1(float x) {
 	return x;
 }
 
-inline float exp2(double x) { 
+inline float exp2(float x) { 
 	x = 1.0 + x / 1024;   
 	x *= x; x *= x; x *= x; x *= x;   
 	x *= x; x *= x; x *= x; x *= x;   
