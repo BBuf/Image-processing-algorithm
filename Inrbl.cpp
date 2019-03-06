@@ -15,6 +15,21 @@ double log2(double N) {
 	return log10(N) / log10(2.0);
 }
 
+float get_Ans(double p, double q, double Ht) {
+	if (Ht < 0.0)
+		Ht += 1.0;
+	else if (Ht > 1.0)
+		Ht -= 1.0;
+	if ((6.0 * Ht) < 1.0)
+		return (p + (q - p) * Ht * 6.0);
+	else if ((2.0 * Ht) < 1.0)
+		return q;
+	else if ((3.0 * Ht) < 2.0)
+		return (p + (q - p) * ((2.0F / 3.0F) - Ht) * 6.0);
+	else
+		return (p);
+}
+
 Mat Inrbl(Mat src, double k) {
 	int row = src.rows;
 	int col = src.cols;
