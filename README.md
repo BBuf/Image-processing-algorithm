@@ -28,4 +28,5 @@
 - Adaptive correction algorithm for illumination inhomogeneity image based on two-dimensional gamma function.cpp C++复现了《基于二维伽马函数的光照不均匀图像自适应校正算法》这篇论文，对光照不均匀的图像有较好的校正效果，且不会像Retiex那样出现光晕。原理请看：https://blog.csdn.net/just_sort/article/details/88569129
 - Real-time adaptive contrast enhancement for imaging sensors.cpp C++复现了《Real-time adaptive contrast enhancement for imaging sensors》这篇论文，实时自适应局部对比度增强算法。原理请看：https://blog.csdn.net/just_sort/article/details/85208124
 - AutomaticWhiteBalanceMethod.cpp C++复现了《A Novel Automatic White Balance Method For Digital Still Cameras》这篇论文，实现了效果比完美反射更好得白平衡效果。原理请看：https://blog.csdn.net/just_sort/article/details/89183909
+- Automatic Color Equalization(ACE) and its Fast Implementation.cpp C++复现了IPOL《Automatic Color  Equalization(ACE) and its Fast Implementation》论文，用于自动色彩均衡。原理请看：https://blog.csdn.net/just_sort/article/details/85237711
 
