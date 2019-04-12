@@ -8,3 +8,4 @@
 - Huang_Fast_MedianBlur.cpp 利用直方图实现快速中值滤波算法，算法原理：https://blog.csdn.net/just_sort/article/details/87994573
 - speed_exp.cpp 在神经网络权值较小的情况下的快速exp算法，算法原理：https://blog.csdn.net/just_sort/article/details/88128200
 - fast_meanFilter.cpp 积分图实现o(1)均值滤波，代码来自ImageShop，算法原理：http://www.cnblogs.com/Imageshop/p/6219990.html
+- IntegralGraphforMeanFiltering.cpp 积分图实现O(1)均值滤波，算法原理：http://www.cnblogs.com/Imageshop/p/6219990.html
