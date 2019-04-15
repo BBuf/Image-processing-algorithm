@@ -3,3 +3,4 @@
 - NearestNeighborInterpolation.cpp C++实现了OpenCV中的最常见的邻近插值。
 - BilinearInterpolation.cpp C++实现了OpenCV中的双线性插值，精度比较高，原理请看：https://handspeaker.iteye.com/blog/1545126
 - speed_BillnearInterpolation.cpp 使用位运算以及OpenMP指令优化双线性插值代码。
+- BicubicInterpolation.cpp C++实现了OpenCV中的立方插值。原理请看：
