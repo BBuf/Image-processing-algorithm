@@ -9,14 +9,14 @@ Mat BilinearInterpolation(Mat src, float sx, float sy) {
 	for (int i = 0; i < dst_row; i++) {
 		int index_i = (i + 0.5) / sx - 0.5;
 		if (index_i < 0) index_i = 0;
-		if (index_i > row - 1) index_i = row - 1;
+		if (index_i > row - 2) index_i = row - 2;
 		int i1 = floor(index_i);
 		int i2 = ceil(index_i);
 		float u = index_i - i;
 		for (int j = 0; j < dst_col; j++) {
 			float index_j = (j + 0.5) / sy - 0.5;
 			if (index_j < 0) index_j = 0;
-			if (index_j > col - 1) index_j = col - 1;
+			if (index_j > col - 2) index_j = col - 2;
 			int j1 = floor(index_j);
 			int j2 = ceil(index_j);
 			float v = index_j - j1;
