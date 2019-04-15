@@ -1,4 +1,5 @@
 //双线性插值
+
 Mat BilinearInterpolation(Mat src, float sx, float sy) {
 	int row = src.rows;
 	int col = src.cols;
