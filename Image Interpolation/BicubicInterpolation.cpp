@@ -1,64 +1,66 @@
-vector <double> getW(double coor, double a) {
-	vector <double> w(4);
-	int base = static_cast<int>(coor); //取整作为基准
-	double e = coor - static_cast<double>(base); //多出基准的小数部分
-	vector <double> tmp(4);//存放公式中 |x| <= 1,  1 < |x| < 2四个值
-	//4 x 4的16个点，所以tmp[0]和tmp[4]距离较远，值在[1, 2]区间
-	tmp[0] = 1.0 + e;//1 < x < 2
-	tmp[1] = e;// x <= 1
-	tmp[2] = 1.0 - e; // x <= 1
-	tmp[3] = 2.0 - e; // 1 < x < 2
-	//按照cubic的公式计算系数w
-	//x <= 1
-	w[1] = (a + 2.0) * std::abs(std::pow(tmp[1], 3)) - (a + 3.0) * std::abs(std::pow(tmp[1], 2)) + 1;
-	w[2] = (a + 2.0) * std::abs(std::pow(tmp[2], 3)) - (a + 3.0) * std::abs(std::pow(tmp[2], 2)) + 1;
-	// 1 < x < 2
-	w[0] = a * std::abs(std::pow(tmp[0], 3)) - 5.0 * a * std::abs(std::pow(tmp[0], 2)) + 8.0*a*std::abs(tmp[0]) - 4.0*a;
-	w[3] = a * std::abs(std::pow(tmp[3], 3)) - 5.0 * a * std::abs(std::pow(tmp[3], 2)) + 8.0*a*std::abs(tmp[3]) - 4.0*a;
-	return w;
-}
-
-Mat BicubicInterpolation(Mat src, float sx, float sy) {
+Mat BicubicInterpolation(Mat src, float scale_x, float scale_y) {
 	int row = src.rows;
 	int col = src.cols;
 	int channels = src.channels();
-	int dst_row = round(row * sx);
-	int dst_col = round(col * sy);
-	sx = 1.0 / sx;
-	sy = 1.0 / sy;
-	Mat dst(dst_row, dst_col, CV_8UC1, Scalar::all(0));
-	for (int i = 2; i < dst_row - 2; i++) {
-		for (int j = 2; j < dst_col - 2; j++) {
-			double r = static_cast <double> (i * sx);
-			double c = static_cast <double> (j * sy);
-			if (r < 1.0) r += 1.0;
-			if (c < 1.0) c += 1.0;
-			vector <double> a = getW(r, -0.5);
-			vector <double> b = getW(c, -0.5);
-			double sum = 0;
-			int cc = static_cast<int>(c);
-			int rr = static_cast<int>(r);
-			if (cc > col - 3) {
-				cc = col - 3;
-			}
-			if (rr > row - 3) {
-				rr = row - 3;
-			}
-			std::vector<std::vector<int> > src_arr = {
-				{ src.at<uchar>(rr - 1, cc - 1), src.at<uchar>(rr, cc - 1), src.at<uchar>(rr + 1, cc - 1), src.at<uchar>(rr + 2, cc - 1) },
-				{ src.at<uchar>(rr - 1, cc), src.at<uchar>(rr, cc), src.at<uchar>(rr + 1, cc), src.at<uchar>(rr + 2, cc) },
-				{ src.at<uchar>(rr - 1, cc + 1), src.at<uchar>(rr, cc + 1), src.at<uchar>(rr + 1, cc + 1), src.at<uchar>(rr + 2, cc + 1) },
-				{ src.at<uchar>(rr - 1, cc + 2), src.at<uchar>(rr, cc + 2), src.at<uchar>(rr + 1, cc + 2), src.at<uchar>(rr + 2, cc + 2) }
-			};
-			for (int k = 0; k < 3; k++) {
+	int dst_row = round(row * scale_x);
+	int dst_col = round(col * scale_y);
+	Mat dst(dst_row, dst_col, CV_8UC3, Scalar::all(0));
+#pragma omp parallel for num_threads(4)
+	for (int j = 0; j < dst_row; j++) {
+		float fy = (float)((j + 0.5) / scale_y - 0.5);
+		int sy = cvFloor(fy);
+		fy -= sy;
+		sy = min(sy, row - 3);
+		sy = max(1, sy);
 
+		const float A = -0.75f;
+
+		float coeffsY[4];
+		coeffsY[0] = ((A*(fy + 1) - 5 * A)*(fy + 1) + 8 * A)*(fy + 1) - 4 * A;
+		coeffsY[1] = ((A + 2)*fy - (A + 3))*fy*fy + 1;
+		coeffsY[2] = ((A + 2)*(1 - fy) - (A + 3))*(1 - fy)*(1 - fy) + 1;
+		coeffsY[3] = 1.f - coeffsY[0] - coeffsY[1] - coeffsY[2];
+
+		short cbufY[4];
+		cbufY[0] = cv::saturate_cast<short>(coeffsY[0] * 2048);
+		cbufY[1] = cv::saturate_cast<short>(coeffsY[1] * 2048);
+		cbufY[2] = cv::saturate_cast<short>(coeffsY[2] * 2048);
+		cbufY[3] = cv::saturate_cast<short>(coeffsY[3] * 2048);
+		for (int i = 0; i < dst_col; i++) {
+			float fx = (float)((i + 0.5) / scale_x - 0.5);
+			int sx = cvFloor(fx);
+			fx -= sx;
+
+			if (sx < 1) {
+				fx = 0, sx = 1;
 			}
-			for (int x = 0; x < 3; x++) {
-				for (int y = 0; y < 3; y++) {
-					sum += a[x] * b[y] * static_cast<double>(src_arr[x][y]);
-				}
+			if (sx >= col - 3) {
+				fx = 0, sx = col - 3;
 			}
-			dst.at<uchar>(i, j) = static_cast<int>(sum);
+
+			float coeffsX[4];
+			coeffsX[0] = ((A*(fx + 1) - 5 * A)*(fx + 1) + 8 * A)*(fx + 1) - 4 * A;
+			coeffsX[1] = ((A + 2)*fx - (A + 3))*fx*fx + 1;
+			coeffsX[2] = ((A + 2)*(1 - fx) - (A + 3))*(1 - fx)*(1 - fx) + 1;
+			coeffsX[3] = 1.f - coeffsX[0] - coeffsX[1] - coeffsX[2];
+
+			short cbufX[4];
+			cbufX[0] = cv::saturate_cast<short>(coeffsX[0] * 2048);
+			cbufX[1] = cv::saturate_cast<short>(coeffsX[1] * 2048);
+			cbufX[2] = cv::saturate_cast<short>(coeffsX[2] * 2048);
+			cbufX[3] = cv::saturate_cast<short>(coeffsX[3] * 2048);
+
+			for (int k = 0; k < channels; ++k)
+			{
+				dst.at<Vec3b>(j, i)[k] = abs((src.at<Vec3b>(sy - 1, sx - 1)[k] * cbufX[0] * cbufY[0] + src.at<Vec3b>(sy, sx - 1)[k] * cbufX[0] * cbufY[1] +
+					src.at<Vec3b>(sy + 1, sx - 1)[k] * cbufX[0] * cbufY[2] + src.at<Vec3b>(sy + 2, sx - 1)[k] * cbufX[0] * cbufY[3] +
+					src.at<Vec3b>(sy - 1, sx)[k] * cbufX[1] * cbufY[0] + src.at<Vec3b>(sy, sx)[k] * cbufX[1] * cbufY[1] +
+					src.at<Vec3b>(sy + 1, sx)[k] * cbufX[1] * cbufY[2] + src.at<Vec3b>(sy + 2, sx)[k] * cbufX[1] * cbufY[3] +
+					src.at<Vec3b>(sy - 1, sx + 1)[k] * cbufX[2] * cbufY[0] + src.at<Vec3b>(sy, sx + 1)[k] * cbufX[2] * cbufY[1] +
+					src.at<Vec3b>(sy + 1, sx + 1)[k] * cbufX[2] * cbufY[2] + src.at<Vec3b>(sy + 2, sx + 1)[k] * cbufX[2] * cbufY[3] +
+					src.at<Vec3b>(sy - 1, sx + 2)[k] * cbufX[3] * cbufY[0] + src.at<Vec3b>(sy, sx + 2)[k] * cbufX[3] * cbufY[1] +
+					src.at<Vec3b>(sy + 1, sx + 2)[k] * cbufX[3] * cbufY[2] + src.at<Vec3b>(sy + 2, sx + 2)[k] * cbufX[3] * cbufY[3]) >> 22);
+			}
 		}
 	}
 	return dst;
