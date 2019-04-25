@@ -30,4 +30,4 @@
 - AutomaticWhiteBalanceMethod.cpp C++复现了《A Novel Automatic White Balance Method For Digital Still Cameras》这篇论文，实现了效果比完美反射更好得白平衡效果。原理请看：https://blog.csdn.net/just_sort/article/details/89183909
 - Automatic Color Equalization(ACE) and its Fast Implementation.cpp C++复现了IPOL《Automatic Color  Equalization(ACE) and its Fast Implementation》论文，用于自动色彩均衡。原理请看：https://blog.csdn.net/just_sort/article/details/85237711
 - Single Image Haze Removal Using Dark Channel Prior(Guided Filter).cpp C++复现了《Single Image Haze Removal Using Dark Channel Prior》，但使用了何博士提到导向滤波来估计透射率，比原始实现效果更好。算法原理：https://blog.csdn.net/just_sort/article/details/89470403
-
+- MedianFilterFogRemoval.cpp C++复现了《[一种单幅图像去雾方法](http://wenku.baidu.com/link?url=ZoNmd4noFbWZOGKCHus4anP83t8gcc0xWDu9QCfgQuzwn7LxUoBbZmMxrUAFYM3_YEMoQH3DdvYD8j1hdcHt5Wz4LhdvDe4_GZYXrqCYco3)》使用中值滤波进行去雾，原理请看：https://blog.csdn.net/just_sort/article/details/89520776
