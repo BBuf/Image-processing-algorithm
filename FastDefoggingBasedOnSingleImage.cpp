@@ -72,7 +72,7 @@ int main() {
 	Mat dst = dehaze(src);
 	cv::imshow("origin", src);
 	cv::imshow("result", dst);
-	cv::imwrite("F:\\fog\\res.jpg", dst);
+	//cv::imwrite("F:\\fog\\res.jpg", dst);
 	waitKey(0);
 	return 0;
 }
