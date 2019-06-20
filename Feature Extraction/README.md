@@ -5,3 +5,4 @@
 - Harris Corner Detection.cpp 实现了Opencv中的角点检测算法。原理请看：https://blog.csdn.net/just_sort/article/details/85302341
 - WaterSegment.cpp 实现了分水岭算法，对图片中的物体做分割。原理请看：https://blog.csdn.net/just_sort/article/details/87376355
 - Marr Edge Detection.cpp 实现了OpenCV中的Marr算子边缘检测算法。原理请看：https://blog.csdn.net/just_sort/article/details/88710341
+- Skin Color Detection.cpp 实现 了两个简单的基于颜色空间的肤色检测算法。原理请看：https://blog.csdn.net/just_sort/article/details/93134960
