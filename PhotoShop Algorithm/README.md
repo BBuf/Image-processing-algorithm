@@ -11,5 +11,5 @@
 - PS八方向浮雕算法.cpp 实现了PS中的八方向浮雕滤镜。
 - PS调和浮雕算法.cpp 实现了PS中的调和浮雕滤镜。
 - PS钝化蒙版算法.cpp 实现了PS钝化蒙版算法，先根据用户指定的钝化度对图像进行高斯模糊处理，再对高斯模糊处理结果与原图像进行钝化处理。 钝化度用来改变像素间的对比度强弱，钝化度，取值（0~100），钝化值越小，钝化的部分就越窄，仅仅会影响边缘像素； 钝化值越大，钝化的范围越宽，效果更明显。
-- PS拉普拉斯算法.cpp 实现了PS拉普拉斯锐化算法，原理请看：https://blog.csdn.net/just_sort/article/details/93870203
+- PS拉普拉斯锐化算法.cpp 实现了PS拉普拉斯锐化算法，原理请看：https://blog.csdn.net/just_sort/article/details/93870203
 - PS自由锐化算法 实现了PS自由锐化算法，原理请看：https://blog.csdn.net/just_sort/article/details/93870203
