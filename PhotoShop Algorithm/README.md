@@ -14,3 +14,4 @@
 - PS拉普拉斯锐化算法.cpp 实现了PS拉普拉斯锐化算法，原理请看：https://blog.csdn.net/just_sort/article/details/93870203
 - PS自由锐化算法.cpp 实现了PS自由锐化算法，原理请看：https://blog.csdn.net/just_sort/article/details/93870203
 - PS模糊滤镜之平滑算法.cpp 实现了模糊滤镜之平滑算法，原理请看：https://blog.csdn.net/just_sort/article/details/93876313
+- PS模糊滤镜之中值模糊.cpp 实现了模糊滤镜之中值模糊算法，原理请看：https://blog.csdn.net/just_sort/article/details/93876313
