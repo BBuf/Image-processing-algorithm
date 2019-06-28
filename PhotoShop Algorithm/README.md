@@ -17,3 +17,4 @@
 - PS模糊滤镜之中值模糊.cpp 实现了模糊滤镜之中值模糊算法，原理请看：https://blog.csdn.net/just_sort/article/details/93876313
 - PS模糊滤镜之高斯模糊.cpp 实现了模糊滤镜之高斯模糊算法，原理请看：https://blog.csdn.net/just_sort/article/details/93876313
 - PS模糊滤镜之运动模糊.cpp 实现了模糊滤镜之运动模糊算法，原理请看：https://blog.csdn.net/just_sort/article/details/93876313
+- PS模糊滤镜之径向模糊算法.cpp 实现了模糊滤镜之径向模糊算法，原理请看：https://blog.csdn.net/just_sort/article/details/93876313
