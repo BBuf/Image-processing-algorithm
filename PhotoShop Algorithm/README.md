@@ -19,3 +19,4 @@
 - PS模糊滤镜之运动模糊.cpp 实现了模糊滤镜之运动模糊算法，原理请看：https://blog.csdn.net/just_sort/article/details/93876313
 - PS模糊滤镜之径向模糊算法.cpp 实现了模糊滤镜之径向模糊算法，原理请看：https://blog.csdn.net/just_sort/article/details/93876313
 - PS图像错切算法.cpp 实现了图像错切算法，可以以一定的角度在水平或垂直方向进行错切。
+- PS图像缩放算法.cpp 实现了图像缩放算法，采用最邻近插值的方式，实现图像的放大缩小。
