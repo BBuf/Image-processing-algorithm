@@ -28,4 +28,5 @@
 - PS算术加法和减法.cpp 实现了对输入的两张图像进行加法或减法的运算合成新图像。
 - PS色彩均衡化算法.cpp 实现了PS色彩均衡化算法，原理请看：https://blog.csdn.net/just_sort/article/details/94430129
 - PS负像算法.cpp 实现了PS负像算法。
+- PS亮度调节(曝光不足或过量).cpp 实现了PS中的亮度调整，调整曝光不足和过量。
 
