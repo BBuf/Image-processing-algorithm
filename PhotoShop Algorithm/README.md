@@ -35,4 +35,5 @@
 - PS模糊滤镜之表面模糊算法.cpp 其作用是在保留图像边缘的情况下，对图像的表面进行模糊处理，效果比双边滤波好。
 - PS模糊滤镜之水波效果算法.cpp 这个算法原理不清楚，最先出处是这个博客：https://blog.csdn.net/matrix_space/article/details/42396829 。但他也没说明原理，还需研究下。
 - PS模糊滤镜之波浪特效.cpp 和水波效果一样，使用坐标变换实现。
+- PS二维高斯蒙版算法.cpp 实现了二维高斯蒙版算法，原理请看：https://chenjunkai.blog.csdn.net/article/details/57942262
 
