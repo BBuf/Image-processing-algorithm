@@ -36,4 +36,5 @@
 - PS模糊滤镜之水波效果算法.cpp 这个算法原理不清楚，最先出处是这个博客：https://blog.csdn.net/matrix_space/article/details/42396829 。但他也没说明原理，还需研究下。
 - PS模糊滤镜之波浪特效.cpp 和水波效果一样，使用坐标变换实现。
 - PS二维高斯蒙版算法.cpp 实现了二维高斯蒙版算法，原理请看：https://chenjunkai.blog.csdn.net/article/details/57942262
+- PS图像色调分离算法.cpp 实现了色调分离算法，原理就是将R, G, B每个通道 0-255 的色调区间进行强制划分到给定的区间里去，所以色调会合并，最终的图像看起来颜色就是一块一块的。
 
