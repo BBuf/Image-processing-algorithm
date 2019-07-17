@@ -17,7 +17,7 @@ Mat SideWindowFilter(Mat src, int radius = 1) {
 	Mat dst(row, col, CV_8UC1);
 	for (int i = 0; i < row; i++) {
 		for (int j = 0; j < col; j++) {
-			if (i < radius || i + radius > row || j < radius || j + radius > col) {
+			if (i < radius || i + radius >= row || j < radius || j + radius >= col) {
 				dst.at<uchar>(i, j) = src.at<uchar>(i, j);
 				continue;
 			}
