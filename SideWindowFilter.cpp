@@ -28,7 +28,7 @@ Mat SideWindowFilter(Mat src, int radius = 1) {
 				int id = 0;
 				for (int x = -radius; x <= radius; x++) {
 					for (int y = -radius; y <= radius; y++) {
-						if (x == 0 && y == 0) continue;
+						//if (x == 0 && y == 0) continue;
 						val += src.at<uchar>(i + x, j + y) * filter[k][id++];
 					}
 				}
@@ -42,7 +42,7 @@ Mat SideWindowFilter(Mat src, int radius = 1) {
 			int id = 0;
 			for (int x = -radius; x <= radius; x++) {
 				for (int y = -radius; y <= radius; y++) {
-					if (x == 0 && y == 0) continue;
+					//if (x == 0 && y == 0) continue;
 					val += src.at<uchar>(i + x, j + y) * filter[pos][id++];
 				}
 			}
