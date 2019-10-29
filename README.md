@@ -35,3 +35,14 @@
 - MedianFilterFogRemoval.cpp C++复现了《[一种单幅图像去雾方法](http://wenku.baidu.com/link?url=ZoNmd4noFbWZOGKCHus4anP83t8gcc0xWDu9QCfgQuzwn7LxUoBbZmMxrUAFYM3_YEMoQH3DdvYD8j1hdcHt5Wz4LhdvDe4_GZYXrqCYco3)》使用中值滤波进行去雾，原理请看：https://blog.csdn.net/just_sort/article/details/89520776
 - FastDefoggingBasedOnSingleImage.cpp C++复现了《基于单幅图像的快速去雾》论文，原理请看：https://blog.csdn.net/just_sort/article/details/90205686
 - SideWindowFilter.cpp C++复现了CVPR2019《Side Window Filter》论文，实现霸气的强制保边，原理请看：https://blog.csdn.net/just_sort/article/details/93664078
+
+
+
+
+
+
+
+# 维护了一个微信公众号，分享论文，算法，比赛，生活，欢迎加入。
+
+![](image/weixin.jpg)
+
