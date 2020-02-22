@@ -1,3 +1,11 @@
+#include "stdafx.h"
+#include <stdio.h>
+#include <iostream>
+#include <immintrin.h>
+#include <opencv2/opencv.hpp>
+using namespace cv;
+using namespace std;
+
 Mat speed_rgb2gray(Mat src) {
 	Mat dst(src.rows, src.cols, CV_8UC1);
 #pragma omp parallel for num_threads(12)
@@ -45,10 +53,19 @@ Mat unevenLightCompensate(Mat src, int block_Size) {
 	}
 	new_img = new_img - average;
 	Mat new_img2;
-	resize(new_img, new_img2, Size(row, col), (0, 0), (0, 0), INTER_CUBIC);
+	resize(new_img, new_img2, Size(col, row), (0, 0), (0, 0), INTER_CUBIC);
 	Mat new_src;
 	gray.convertTo(new_src, CV_32FC1);
 	Mat dst = new_src - new_img2;
 	dst.convertTo(dst, CV_8UC1);
 	return dst;
+}
+
+int main() {
+	Mat src = cv::imread("F:\\car.jpg");
+	Mat dst = unevenLightCompensate(src, 64);
+	cv::imshow("result", dst);
+	cv::imwrite("F:\\res.jpg", dst);
+	cv::waitKey(0);
+	return 0;
 }
