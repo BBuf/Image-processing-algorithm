@@ -60,6 +60,7 @@ Mat MedianSideWindowFilter(Mat src, int radius = 1) {
 	int channels = src.channels();
 	InitFilter(radius);
 	//针对灰度图
+	vector <int> now;
 	if (channels == 1) {
 		Mat dst(row, col, CV_8UC1);
 		for (int i = 0; i < row; i++) {
@@ -73,16 +74,17 @@ Mat MedianSideWindowFilter(Mat src, int radius = 1) {
 				for (int k = 0; k < 8; k++) {
 					int val = 0;
 					int id = 0;
-					vector <int> now;
+					now.clear();
 					for (int x = -radius; x <= radius; x++) {
 						for (int y = -radius; y <= radius; y++) {
 							//if (x == 0 && y == 0) continue;
-							now.push_back(src.at<uchar>(i + x, j + y) * filter[k][id++]);
+							if (filter[k][id]) now.push_back(src.at<uchar>(i + x, j + y) * filter[k][id++]);
 							//val += src.at<uchar>(i + x, j + y) * filter[k][id++];
 						}
 					}
 					sort(now.begin(), now.end());
-					val = now[(2 * radius + 1)*(2 * radius + 1) / 2];
+					int mid = (int)(now.size());
+					val = now[mid / 2];
 					if (abs(val - src.at<uchar>(i, j)) < minn) {
 						minn = abs(val - src.at<uchar>(i, j));
 						pos = k;
@@ -90,16 +92,17 @@ Mat MedianSideWindowFilter(Mat src, int radius = 1) {
 				}
 				int val = 0;
 				int id = 0;
-				vector <int> now;
+				now.clear();
 				for (int x = -radius; x <= radius; x++) {
 					for (int y = -radius; y <= radius; y++) {
 						//if (x == 0 && y == 0) continue;
-						now.push_back(src.at<uchar>(i + x, j + y) * filter[pos][id++]);
+						if(filter[pos][id]) now.push_back(src.at<uchar>(i + x, j + y) * filter[pos][id++]);
 						//val += src.at<uchar>(i + x, j + y) * filter[k][id++];
 					}
 				}
 				sort(now.begin(), now.end());
-				val = now[(2 * radius + 1)*(2 * radius + 1) / 2];
+				int mid = (int)(now.size());
+				val = now[mid / 2];
 				dst.at<uchar>(i, j) = val;
 			}
 		}
@@ -119,15 +122,17 @@ Mat MedianSideWindowFilter(Mat src, int radius = 1) {
 				for (int k = 0; k < 8; k++) {
 					int val = 0;
 					int id = 0;
-					vector <int> now;
+					now.clear();
 					for (int x = -radius; x <= radius; x++) {
 						for (int y = -radius; y <= radius; y++) {
 							//if (x == 0 && y == 0) continue;
 							//val += src.at<Vec3b>(i + x, j + y)[c] * filter[k][id++];
-							now.push_back(src.at<Vec3b>(i + x, j + y)[c] * filter[k][id++]);
+							if (filter[k][id]) now.push_back(src.at<Vec3b>(i + x, j + y)[c] * filter[k][id++]);
 						}
 					}
-					val = now[(2 * radius + 1)*(2 * radius + 1) / 2];
+					sort(now.begin(), now.end());
+					int mid = (int)(now.size());
+					val = now[mid / 2];
 					if (abs(val - src.at<Vec3b>(i, j)[c]) < minn) {
 						minn = abs(val - src.at<Vec3b>(i, j)[c]);
 						pos = k;
@@ -135,15 +140,17 @@ Mat MedianSideWindowFilter(Mat src, int radius = 1) {
 				}
 				int val = 0;
 				int id = 0;
-				vector <int> now;
+				now.clear();
 				for (int x = -radius; x <= radius; x++) {
 					for (int y = -radius; y <= radius; y++) {
 						//if (x == 0 && y == 0) continue;
 						//val += src.at<Vec3b>(i + x, j + y)[c] * filter[k][id++];
-						now.push_back(src.at<Vec3b>(i + x, j + y)[c] * filter[pos][id++]);
+						if (filter[pos][id]) now.push_back(src.at<Vec3b>(i + x, j + y)[c] * filter[pos][id++]);
 					}
 				}
-				val = now[(2 * radius + 1)*(2 * radius + 1) / 2];
+				sort(now.begin(), now.end());
+				int mid = (int)(now.size());
+				val = now[mid / 2];
 				dst.at<Vec3b>(i, j)[c] = val;
 			}
 		}
