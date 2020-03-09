@@ -106,7 +106,7 @@ Mat MedianSideWindowFilter(Mat src, int radius = 1) {
 				for (int x = -radius; x <= radius; x++) {
 					for (int y = -radius; y <= radius; y++) {
 						//if (x == 0 && y == 0) continue;
-						if(filter[pos][id]) now.push_back(src.at<uchar>(i + x, j + y) * filter[pos][id]);
+						if (filter[pos][id]) now.push_back(src.at<uchar>(i + x, j + y) * filter[pos][id]);
 						id++;
 						//val += src.at<uchar>(i + x, j + y) * filter[k][id++];
 					}
@@ -186,15 +186,15 @@ static double angle(Point pt1, Point pt2, Point pt0)
 }
 
 //寻找矩形
-static void findSquares(const Mat& image, vector<vector<Point> >& squares, int N=5, int thresh=50)
+static void findSquares(const Mat& image, vector<vector<Point> >& squares, int N = 5, int thresh = 50)
 {
 
 	//滤波可以提升边缘检测的性能
 	Mat timg(image);
 	// 普通中值滤波
-    medianBlur(image, timg, 9);
+	//medianBlur(image, timg, 9);
 	// SideWindowFilter的中值滤波
-	// timg = MedianSideWindowFilter(image, 4);
+	timg = MedianSideWindowFilter(image, 4);
 	Mat gray0(timg.size(), CV_8U), gray;
 	// 存储轮廓
 	vector<vector<Point> > contours;
@@ -213,8 +213,8 @@ static void findSquares(const Mat& image, vector<vector<Point> >& squares, int N
 		// 第一个输入矩阵的通道标记范围为：0 ~src[0].channels() - 1，第二个输入矩阵的通道标记范围为：src[0].channels() ~src[0].channels() + src[1].channels() - 1,
 		// 以此类推；其次输出矩阵也用同样的规则标记，第一个输出矩阵的通道标记范围为：0 ~dst[0].channels() - 1，第二个输入矩阵的通道标记范围为：dst[0].channels()
 		// ~dst[0].channels() + dst[1].channels() - 1, 以此类推；最后，数组fromTo的第一个元素即fromTo[0]应该填入输入矩阵的某个通道标记，而fromTo的第二个元素即
-        // fromTo[1]应该填入输出矩阵的某个通道标记，这样函数就会把输入矩阵的fromTo[0]通道里面的数据复制给输出矩阵的fromTo[1]通道。fromTo后面的元素也是这个
-        // 道理，总之就是一个输入矩阵的通道标记后面必须跟着个输出矩阵的通道标记.
+		// fromTo[1]应该填入输出矩阵的某个通道标记，这样函数就会把输入矩阵的fromTo[0]通道里面的数据复制给输出矩阵的fromTo[1]通道。fromTo后面的元素也是这个
+		// 道理，总之就是一个输入矩阵的通道标记后面必须跟着个输出矩阵的通道标记.
 		// npairs: 即参数fromTo中的有几组输入输出通道关系，其实就是参数fromTo的数组元素个数除以2.
 		mixChannels(&timg, 1, &gray0, 1, ch, 1);
 
@@ -260,7 +260,7 @@ static void findSquares(const Mat& image, vector<vector<Point> >& squares, int N
 				// bool closed：表示输出的多边形是否封闭
 
 				// arcLength 计算图像轮廓的周长
-				approxPolyDP(Mat(contours[i]), approx, arcLength(Mat(contours[i]), true)*0.02, true);
+				approxPolyDP(Mat(contours[i]), approx, 20, true);
 
 				// 近似后，方形轮廓应具有4个顶点
 				// 相对较大的区域（以滤除嘈杂的轮廓）并且是凸集。
@@ -301,17 +301,12 @@ void drawSquares(Mat &image, const vector<vector<Point> >& squares) {
 }
 
 int main() {
-	Mat src = imread("F:\\1.jpg");
-	for (int i = 0; i < 10; i++) {
-		src = MedianSideWindowFilter(src, 3);
-	}
-	imwrite("F:\\res.jpg", src);
-	/*Mat src = cv::imread("F:\\manyStickies.jpg");
+	Mat src = cv::imread("F:\\stone.jpg");
 	vector<vector<Point> > squares;
 	findSquares(src, squares, 5, 50);
 	drawSquares(src, squares);
 	imshow("result", src);
 	imwrite("F:\\res2.jpg", src);
-	waitKey(0);*/
+	waitKey(0);
 	return 0;
 }
