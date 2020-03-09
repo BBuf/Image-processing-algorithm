@@ -1,3 +1,12 @@
+#include <stdio.h>
+#include <iostream>
+#include <immintrin.h>
+#include <opencv2/opencv.hpp>
+using namespace cv;
+using namespace std;
+
+
+
 //针对灰度图的中值滤波+CVPR 2019的SideWindowFilter
 //其他种类的滤波直接换核即可
 
@@ -78,7 +87,8 @@ Mat MedianSideWindowFilter(Mat src, int radius = 1) {
 					for (int x = -radius; x <= radius; x++) {
 						for (int y = -radius; y <= radius; y++) {
 							//if (x == 0 && y == 0) continue;
-							if (filter[k][id]) now.push_back(src.at<uchar>(i + x, j + y) * filter[k][id++]);
+							if (filter[k][id]) now.push_back(src.at<uchar>(i + x, j + y) * filter[k][id]);
+							id++;
 							//val += src.at<uchar>(i + x, j + y) * filter[k][id++];
 						}
 					}
@@ -96,7 +106,8 @@ Mat MedianSideWindowFilter(Mat src, int radius = 1) {
 				for (int x = -radius; x <= radius; x++) {
 					for (int y = -radius; y <= radius; y++) {
 						//if (x == 0 && y == 0) continue;
-						if(filter[pos][id]) now.push_back(src.at<uchar>(i + x, j + y) * filter[pos][id++]);
+						if(filter[pos][id]) now.push_back(src.at<uchar>(i + x, j + y) * filter[pos][id]);
+						id++;
 						//val += src.at<uchar>(i + x, j + y) * filter[k][id++];
 					}
 				}
@@ -127,7 +138,8 @@ Mat MedianSideWindowFilter(Mat src, int radius = 1) {
 						for (int y = -radius; y <= radius; y++) {
 							//if (x == 0 && y == 0) continue;
 							//val += src.at<Vec3b>(i + x, j + y)[c] * filter[k][id++];
-							if (filter[k][id]) now.push_back(src.at<Vec3b>(i + x, j + y)[c] * filter[k][id++]);
+							if (filter[k][id]) now.push_back(src.at<Vec3b>(i + x, j + y)[c] * filter[k][id]);
+							id++;
 						}
 					}
 					sort(now.begin(), now.end());
@@ -145,7 +157,8 @@ Mat MedianSideWindowFilter(Mat src, int radius = 1) {
 					for (int y = -radius; y <= radius; y++) {
 						//if (x == 0 && y == 0) continue;
 						//val += src.at<Vec3b>(i + x, j + y)[c] * filter[k][id++];
-						if (filter[pos][id]) now.push_back(src.at<Vec3b>(i + x, j + y)[c] * filter[pos][id++]);
+						if (filter[pos][id]) now.push_back(src.at<Vec3b>(i + x, j + y)[c] * filter[pos][id]);
+						id++;
 					}
 				}
 				sort(now.begin(), now.end());
