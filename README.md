@@ -34,7 +34,7 @@
 - Single Image Haze Removal Using Dark Channel Prior(Guided Filter).cpp C++复现了《Single Image Haze Removal Using Dark Channel Prior》论文，同时使用了何博士提到导向滤波来估计透射率，比原始实现效果更好。算法原理：https://blog.csdn.net/just_sort/article/details/89470403
 - MedianFilterFogRemoval.cpp C++复现了《[一种单幅图像去雾方法](http://wenku.baidu.com/link?url=ZoNmd4noFbWZOGKCHus4anP83t8gcc0xWDu9QCfgQuzwn7LxUoBbZmMxrUAFYM3_YEMoQH3DdvYD8j1hdcHt5Wz4LhdvDe4_GZYXrqCYco3)》使用中值滤波进行去雾，原理请看：https://blog.csdn.net/just_sort/article/details/89520776
 - FastDefoggingBasedOnSingleImage.cpp C++复现了《基于单幅图像的快速去雾》论文，原理请看：https://blog.csdn.net/just_sort/article/details/90205686
-- SideWindowFilter.cpp C++复现了CVPR2019《Side Window Filter》论文，实现霸气的强制保边，原理请看：https://blog.csdn.net/just_sort/article/details/93664078
+- BoxSideWindowFilter.cpp C++复现了CVPR2019《Side Window Filter》论文(Box Filter)，实现霸气的强制保边，原理请看：https://blog.csdn.net/just_sort/article/details/93664078
 
 
 
