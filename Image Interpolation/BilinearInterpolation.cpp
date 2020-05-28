@@ -13,7 +13,7 @@ Mat BilinearInterpolation(Mat src, float sx, float sy) {
 		if (index_i > row - 2) index_i = row - 2;
 		int i1 = floor(index_i);
 		int i2 = ceil(index_i);
-		float u = index_i - i;
+		float u = index_i - i1;
 		for (int j = 0; j < dst_col; j++) {
 			float index_j = (j + 0.5) / sy - 0.5;
 			if (index_j < 0) index_j = 0;
