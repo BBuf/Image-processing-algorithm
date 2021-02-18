@@ -8,7 +8,7 @@ Mat BilinearInterpolation(Mat src, float sx, float sy) {
 	int dst_col = round(col * sy);
 	Mat dst(dst_row, dst_col, CV_8UC3);
 	for (int i = 0; i < dst_row; i++) {
-		int index_i = (i + 0.5) / sx - 0.5;
+		float index_i = (i + 0.5) / sx - 0.5;
 		if (index_i < 0) index_i = 0;
 		if (index_i > row - 2) index_i = row - 2;
 		int i1 = floor(index_i);
