@@ -38,9 +38,3 @@
 - MedianSideWindowFilter.cpp C++复现了CVPR2019《Side Window Filter》论文(Median Filter)，实现霸气的强制保边，原理请看：https://blog.csdn.net/just_sort/article/details/93664078
 - RectangleDetection.cpp C++复现了StackOverFlow上面的一个有趣的矩形检测算法，并且配合Side Window Filter可以取得更好的效果，原理请看：https://blog.csdn.net/just_sort/article/details/104754937
 
-
-
-
-
-![我的公众号，欢迎关注](image/weixin.jpg)
-
