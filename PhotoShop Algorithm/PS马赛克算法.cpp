@@ -1,4 +1,4 @@
-Mat Masic(Mat src, int Ksize) {
+Mat Mosaic(Mat src, int Ksize) {
 	int offset = (Ksize - 1) / 2;
 	int row = src.rows;
 	int col = src.cols;
